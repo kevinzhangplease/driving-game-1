@@ -7,6 +7,8 @@ import { CarVisual } from '@/vehicle/CarVisual';
 import { ChaseCamera } from '@/vehicle/ChaseCamera';
 import { defaultVehicleTuning } from '@/vehicle/VehicleTuning';
 import { InputManager } from '@/input/InputManager';
+import { KeyBindings } from '@/input/KeyBindings';
+import { RebindMenu } from '@/input/RebindMenu';
 
 async function main() {
   const app = document.querySelector<HTMLDivElement>('#app')!;
@@ -47,10 +49,20 @@ async function main() {
 
   const chaseCamera = new ChaseCamera(engine.camera);
   const input = new InputManager();
+  const keyBindings = new KeyBindings();
+  const rebindMenu = new RebindMenu(keyBindings, input);
+
+  let openSettingsWasHeld = false;
 
   engine.onFixedUpdate((dt) => {
-    const throttle = input.isAnyHeld(['KeyW', 'ArrowUp']) ? 1 : 0;
-    const brakeKey = input.isAnyHeld(['KeyS', 'ArrowDown']) ? 1 : 0;
+    const openSettingsHeld = input.isActionHeld(keyBindings, 'openSettings');
+    if (openSettingsHeld && !openSettingsWasHeld) {
+      rebindMenu.toggle();
+    }
+    openSettingsWasHeld = openSettingsHeld;
+
+    const throttle = input.isActionHeld(keyBindings, 'throttle') ? 1 : 0;
+    const brakeKey = input.isActionHeld(keyBindings, 'brake') ? 1 : 0;
     // Reverse: if stationary/slow and holding "brake" key, treat as reverse throttle instead.
     const speed = vehicle.currentSpeed();
     let finalThrottle = throttle;
@@ -62,8 +74,8 @@ async function main() {
         finalThrottle = -1;
       }
     }
-    const steerLeft = input.isAnyHeld(['KeyA', 'ArrowLeft']);
-    const steerRight = input.isAnyHeld(['KeyD', 'ArrowRight']);
+    const steerLeft = input.isActionHeld(keyBindings, 'steerLeft');
+    const steerRight = input.isActionHeld(keyBindings, 'steerRight');
     const steer = (steerLeft ? 1 : 0) - (steerRight ? 1 : 0);
 
     vehicle.update(dt, { throttle: finalThrottle, brake: finalBrake, steer });
