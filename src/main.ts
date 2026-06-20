@@ -19,6 +19,7 @@ import { bindWorldSettings } from '@/settings/WorldSettingsBinding';
 import { HUD } from '@/ui/HUD';
 import { Minimap } from '@/ui/Minimap';
 import { TopBarMenu } from '@/ui/TopBarMenu';
+import { Precipitation } from '@/ui/Precipitation';
 
 async function main() {
   const app = document.querySelector<HTMLDivElement>('#app')!;
@@ -72,6 +73,7 @@ async function main() {
 
   const hud = new HUD();
   const minimap = new Minimap();
+  const precipitation = new Precipitation(engine.scene);
 
   const settingsStore = new SettingsStore(allParams);
   const settingsPanel = new SettingsPanel(settingsStore);
@@ -90,6 +92,11 @@ async function main() {
     vehicleTuning: tuning,
     vehicle,
     hud,
+    precipitation,
+    setPhysicsHz: (hz) => {
+      engine.setFixedTimestepHz(hz);
+      physics.setTimestep(1 / hz);
+    },
   });
 
   let openSettingsWasHeld = false;
@@ -180,6 +187,9 @@ async function main() {
     const forward = new THREE.Vector3(0, 0, 1).applyQuaternion(new THREE.Quaternion(r.x, r.y, r.z, r.w));
     const headingRad = Math.atan2(forward.x, -forward.z);
     minimap.update(carPos.x, carPos.z, headingRad, chunkManager.roadGraph);
+
+    const cam = engine.camera.position;
+    precipitation.update(1 / 60, cam.x, cam.y, cam.z);
   });
 
   engine.start();

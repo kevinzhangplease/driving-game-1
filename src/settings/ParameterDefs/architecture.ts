@@ -96,12 +96,18 @@ export const architectureParams: ParamDef[] = [
     ],
     tooltip: 'Reserved for distinct per-style building geometry; needs new building mesh variants.',
   }),
-  stub('architecture.roofVariety', 'Roof Variety', 'architecture', 0.5, 'slider', {
+  {
+    id: 'architecture.roofVariety',
+    label: 'Roof Variety',
+    category: 'architecture',
+    widget: 'slider',
+    defaultValue: 0.5,
     min: 0,
     max: 1,
     step: 0.05,
-    tooltip: 'Reserved for varied roof shapes; needs new building mesh variants.',
-  }),
+    tooltip: 'Fraction of (non-skyscraper) buildings topped with a pitched pyramid roof instead of a flat one.',
+    wired: true,
+  },
   stub('architecture.facadeDetail', 'Facade Detail', 'architecture', 0.5, 'slider', {
     min: 0,
     max: 1,

@@ -37,20 +37,32 @@ export const weatherParams: ParamDef[] = [
     tooltip: 'Shifts fog color from cool blue-grey toward a warm haze tint.',
     wired: true,
   },
-  stub('weather.cloudCover', 'Cloud Cover', 'weather', 0.3, 'slider', {
+  {
+    id: 'weather.cloudCover',
+    label: 'Cloud Cover',
+    category: 'weather',
+    widget: 'slider',
+    defaultValue: 0.3,
     min: 0,
     max: 1,
     step: 0.05,
-    tooltip: 'Reserved for a sky/cloud rendering system; needs a sky dome or cloud shader.',
-  }),
-  stub('weather.precipitation', 'Precipitation', 'weather', 'none', 'select', {
+    tooltip: 'Overcast amount: dims the sunlight and pushes the sky toward a flat grey.',
+    wired: true,
+  },
+  {
+    id: 'weather.precipitation',
+    label: 'Precipitation',
+    category: 'weather',
+    widget: 'select',
+    defaultValue: 'none',
     options: [
       { value: 'none', label: 'None' },
       { value: 'rain', label: 'Rain' },
       { value: 'snow', label: 'Snow' },
     ],
-    tooltip: 'Reserved for rain/snow particle effects; needs a new particle system.',
-  }),
+    tooltip: 'Falling rain or snow particles around the camera.',
+    wired: true,
+  },
   stub('weather.windSpeed', 'Wind Speed', 'weather', 3, 'slider', {
     min: 0,
     max: 30,

@@ -4,8 +4,18 @@ import { ChunkManager } from '@/world/ChunkManager';
 import { MouseSteering } from '@/input/MouseSteering';
 import type { VehicleTuning } from '@/vehicle/VehicleTuning';
 import type { VehicleController } from '@/vehicle/VehicleController';
-import type { ColorPalette, SeasonalTint } from '@/world/Chunk';
+import type { ColorPalette, SeasonalTint, CanopyShape, BiomeType } from '@/world/Chunk';
 import type { HUD } from '@/ui/HUD';
+import type { Precipitation, PrecipitationMode } from '@/ui/Precipitation';
+
+// Each biome scales how densely trees actually appear, on top of the user's
+// raw Tree Density slider, to give each biome a distinct feel.
+const BIOME_TREE_DENSITY_MULTIPLIER: Record<BiomeType, number> = {
+  temperate: 1,
+  arid: 0.4,
+  tropical: 1.5,
+  alpine: 0.7,
+};
 
 // How far above the resampled ground the chassis is dropped after a world
 // regeneration, so it always free-falls onto the new terrain/road collider
@@ -43,14 +53,26 @@ export interface WorldSettingsTargets {
   vehicleTuning: VehicleTuning;
   vehicle: VehicleController;
   hud: HUD;
+  precipitation: Precipitation;
+  // Applies a new physics/fixed-update tick rate to both the engine loop and
+  // the Rapier world, kept as a callback so this module stays decoupled from
+  // the Engine/PhysicsWorld internals.
+  setPhysicsHz: (hz: number) => void;
 }
+
+// Overcast color the sky background is pushed toward as cloud cover rises.
+const OVERCAST_COLOR = new THREE.Color(0.7, 0.72, 0.74);
 
 // Subscribes to every wired ParamDef and applies it to the live world.
 // Terrain/road/placement changes regenerate chunks (debounced, so dragging a
 // slider doesn't stutter); lighting/fog/mouse-steering apply immediately
 // since they're cheap.
 export function bindWorldSettings(store: SettingsStore, targets: WorldSettingsTargets): void {
-  const { chunkManager, mouseSteering, scene, sun, hemiLight, vehicleTuning, vehicle, hud } = targets;
+  const { chunkManager, mouseSteering, scene, sun, hemiLight, vehicleTuning, vehicle, hud, precipitation, setPhysicsHz } =
+    targets;
+
+  // Captured once so cloud cover can interpolate the sky between clear and overcast.
+  const skyBaseColor = (scene.background as THREE.Color).clone();
 
   // Resamples the (possibly just-changed) heightfield under the car and
   // teleports it well above that point with zeroed velocity, so it always
@@ -89,6 +111,7 @@ export function bindWorldSettings(store: SettingsStore, targets: WorldSettingsTa
   }, 250);
 
   const applyPlacement = debounce(() => {
+    const biome = store.getString('vegetation.biomeType') as BiomeType;
     chunkManager.placement = {
       building: {
         ...chunkManager.placement.building,
@@ -101,7 +124,8 @@ export function bindWorldSettings(store: SettingsStore, targets: WorldSettingsTa
       },
       tree: {
         ...chunkManager.placement.tree,
-        existenceProbability: store.getNumber('vegetation.density'),
+        existenceProbability:
+          store.getNumber('vegetation.density') * BIOME_TREE_DENSITY_MULTIPLIER[biome],
         cellSize: store.getNumber('vegetation.cellSize'),
         minHeight: store.getNumber('vegetation.minHeight'),
         maxHeight: store.getNumber('vegetation.maxHeight'),
@@ -113,10 +137,22 @@ export function bindWorldSettings(store: SettingsStore, targets: WorldSettingsTa
         benchDensity: store.getNumber('streetFurniture.benchDensity'),
         trashCanDensity: store.getNumber('streetFurniture.trashCanDensity'),
         fireHydrantDensity: store.getNumber('streetFurniture.fireHydrantDensity'),
+        busStopChance: store.getNumber('streetFurniture.busStopChance'),
+        billboardChance: store.getNumber('streetFurniture.billboardChance'),
+        fenceDensity: store.getNumber('streetFurniture.fenceDensity'),
+      },
+      groundCover: {
+        ...chunkManager.placement.groundCover,
+        grassDensity: store.getNumber('vegetation.grassDensity'),
+        shrubDensity: store.getNumber('vegetation.shrubDensity'),
+        flowerChance: store.getNumber('vegetation.flowerChance'),
       },
       roadStyle: chunkManager.placement.roadStyle,
       buildingColorPalette: store.getString('architecture.colorPalette') as ColorPalette,
       vegetationSeasonalTint: store.getString('vegetation.seasonalTint') as SeasonalTint,
+      canopyShape: store.getString('vegetation.canopyShape') as CanopyShape,
+      biomeType: biome,
+      roofVariety: store.getNumber('architecture.roofVariety'),
     };
     chunkManager.regenerateAll();
     repositionVehicleSafely();
@@ -146,8 +182,11 @@ export function bindWorldSettings(store: SettingsStore, targets: WorldSettingsTa
   };
 
   const applyLighting = () => {
-    sun.intensity = store.getNumber('lighting.sunIntensity');
+    // Cloud cover dims the sun and pushes the sky toward overcast grey.
+    const cloud = store.getNumber('weather.cloudCover');
+    sun.intensity = store.getNumber('lighting.sunIntensity') * (1 - 0.65 * cloud);
     hemiLight.intensity = store.getNumber('lighting.ambientIntensity');
+    (scene.background as THREE.Color).copy(skyBaseColor).lerp(OVERCAST_COLOR, cloud);
     const hour = store.getNumber('lighting.timeOfDay');
     const azimuthDeg = store.getNumber('lighting.sunAzimuth');
     const elevationAngle = (hour / 24) * Math.PI * 2 - Math.PI / 2;
@@ -172,6 +211,10 @@ export function bindWorldSettings(store: SettingsStore, targets: WorldSettingsTa
     if (elevation <= 0) hemiLight.intensity = Math.max(hemiLight.intensity, moonBrightness);
   };
 
+  const applyPrecipitation = () => {
+    precipitation.setMode(store.getString('weather.precipitation') as PrecipitationMode);
+  };
+
   const applyMouseSteering = () => {
     mouseSteering.sensitivity = store.getNumber('gameplay.mouseSteeringSensitivity');
     mouseSteering.linearity = store.getNumber('gameplay.mouseSteeringLinearity');
@@ -192,6 +235,10 @@ export function bindWorldSettings(store: SettingsStore, targets: WorldSettingsTa
   const applyGameplayDisplay = () => {
     hud.setVisible(store.getBoolean('gameplay.hudEnabled'));
     hud.setUnits(store.getString('gameplay.unitsDisplay') as 'kph' | 'mph');
+  };
+
+  const applyPhysicsRate = () => {
+    setPhysicsHz(store.getNumber('gameplay.fixedTimestepHz'));
   };
 
   const SHADOW_MAP_SIZE_BY_QUALITY: Record<string, number> = { off: 0, low: 512, medium: 1024, high: 2048 };
@@ -233,16 +280,25 @@ export function bindWorldSettings(store: SettingsStore, targets: WorldSettingsTa
     'architecture.maxHeight',
     'architecture.colorPalette',
     'architecture.skyscraperChance',
+    'architecture.roofVariety',
     'vegetation.density',
     'vegetation.cellSize',
     'vegetation.minHeight',
     'vegetation.maxHeight',
     'vegetation.seasonalTint',
+    'vegetation.canopyShape',
+    'vegetation.biomeType',
+    'vegetation.grassDensity',
+    'vegetation.shrubDensity',
+    'vegetation.flowerChance',
     'streetFurniture.signsEnabled',
     'streetFurniture.lampPostDensity',
     'streetFurniture.benchDensity',
     'streetFurniture.trashCanDensity',
     'streetFurniture.fireHydrantDensity',
+    'streetFurniture.busStopChance',
+    'streetFurniture.billboardChance',
+    'streetFurniture.fenceDensity',
   ]);
   const fogIds = new Set(['weather.fogNear', 'weather.fogFar', 'weather.fogColorWarmth']);
   const lightingIds = new Set([
@@ -252,6 +308,9 @@ export function bindWorldSettings(store: SettingsStore, targets: WorldSettingsTa
     'lighting.sunAzimuth',
     'lighting.colorTemperature',
     'lighting.moonBrightness',
+    // Cloud cover lives in the Weather category but is applied through the
+    // lighting pass since it dims the sun and tints the sky.
+    'weather.cloudCover',
   ]);
   const shadowQualityIds = new Set(['lighting.shadowQuality']);
   const mouseIds = new Set(['gameplay.mouseSteeringSensitivity', 'gameplay.mouseSteeringLinearity']);
@@ -278,17 +337,21 @@ export function bindWorldSettings(store: SettingsStore, targets: WorldSettingsTa
     else if (placementIds.has(id)) applyPlacement();
     else if (fogIds.has(id)) applyFog();
     else if (lightingIds.has(id)) applyLighting();
+    else if (id === 'weather.precipitation') applyPrecipitation();
     else if (shadowQualityIds.has(id)) applyShadowQuality();
     else if (mouseIds.has(id)) applyMouseSteering();
     else if (id === 'gameplay.chunkLoadRadius') applyChunkLoadRadius();
     else if (vehicleIds.has(id)) applyVehicleTuning();
     else if (gameplayDisplayIds.has(id)) applyGameplayDisplay();
+    else if (id === 'gameplay.fixedTimestepHz') applyPhysicsRate();
   });
 
   applyFog();
   applyLighting();
+  applyPrecipitation();
   applyShadowQuality();
   applyMouseSteering();
   applyVehicleTuning();
   applyGameplayDisplay();
+  applyPhysicsRate();
 }

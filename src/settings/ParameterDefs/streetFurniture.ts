@@ -1,4 +1,4 @@
-import { stub, type ParamDef } from '../ParameterRegistry';
+import type { ParamDef } from '../ParameterRegistry';
 
 export const streetFurnitureParams: ParamDef[] = [
   {
@@ -58,22 +58,40 @@ export const streetFurnitureParams: ParamDef[] = [
     tooltip: 'How densely fire hydrants are placed along roadsides.',
     wired: true,
   },
-  stub('streetFurniture.busStopChance', 'Bus Stop Chance', 'streetFurniture', 0.05, 'slider', {
+  {
+    id: 'streetFurniture.busStopChance',
+    label: 'Bus Stop Chance',
+    category: 'streetFurniture',
+    widget: 'slider',
+    defaultValue: 0.05,
     min: 0,
     max: 1,
     step: 0.05,
-    tooltip: 'Reserved for bus stop props; needs a new placement/mesh.',
-  }),
-  stub('streetFurniture.billboardChance', 'Billboard Chance', 'streetFurniture', 0.03, 'slider', {
+    tooltip: 'How often a roadside slot gets a bus-stop shelter.',
+    wired: true,
+  },
+  {
+    id: 'streetFurniture.billboardChance',
+    label: 'Billboard Chance',
+    category: 'streetFurniture',
+    widget: 'slider',
+    defaultValue: 0.03,
     min: 0,
     max: 1,
     step: 0.01,
-    tooltip: 'Reserved for billboard props; needs a new placement/mesh.',
-  }),
-  stub('streetFurniture.fenceDensity', 'Fence Density', 'streetFurniture', 0.1, 'slider', {
+    tooltip: 'How often a roadside slot gets a raised billboard panel.',
+    wired: true,
+  },
+  {
+    id: 'streetFurniture.fenceDensity',
+    label: 'Fence Density',
+    category: 'streetFurniture',
+    widget: 'slider',
+    defaultValue: 0.1,
     min: 0,
     max: 1,
     step: 0.05,
-    tooltip: 'Reserved for fence placement along property lines; needs a new placement system.',
-  }),
+    tooltip: 'How densely short fence sections are placed along roadsides.',
+    wired: true,
+  },
 ];

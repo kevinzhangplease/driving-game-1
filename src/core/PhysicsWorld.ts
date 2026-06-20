@@ -20,4 +20,10 @@ export class PhysicsWorld {
   step(): void {
     this.world.step();
   }
+
+  // Keeps Rapier's integration step in sync with the engine's fixed timestep
+  // so physics stays correct when the tick rate changes.
+  setTimestep(dt: number): void {
+    this.world.timestep = dt;
+  }
 }

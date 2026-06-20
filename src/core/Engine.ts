@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-const FIXED_TIMESTEP = 1 / 60;
+const DEFAULT_FIXED_TIMESTEP = 1 / 60;
 const MAX_SUBSTEPS = 5;
 
 export type UpdateFn = (fixedDt: number) => void;
@@ -16,6 +16,7 @@ export class Engine {
   private renderFns: RenderFn[] = [];
   private accumulator = 0;
   private running = false;
+  private fixedTimestep = DEFAULT_FIXED_TIMESTEP;
 
   constructor(container: HTMLElement) {
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -49,6 +50,12 @@ export class Engine {
     this.renderFns.push(fn);
   }
 
+  // Sets the fixed-update/physics tick rate. The accumulator loop already
+  // decouples this from the render rate, so it can change live.
+  setFixedTimestepHz(hz: number): void {
+    this.fixedTimestep = 1 / hz;
+  }
+
   start(): void {
     if (this.running) return;
     this.running = true;
@@ -66,14 +73,14 @@ export class Engine {
     this.accumulator += frameDt;
 
     let steps = 0;
-    while (this.accumulator >= FIXED_TIMESTEP && steps < MAX_SUBSTEPS) {
-      for (const fn of this.updateFns) fn(FIXED_TIMESTEP);
-      this.accumulator -= FIXED_TIMESTEP;
+    while (this.accumulator >= this.fixedTimestep && steps < MAX_SUBSTEPS) {
+      for (const fn of this.updateFns) fn(this.fixedTimestep);
+      this.accumulator -= this.fixedTimestep;
       steps++;
     }
     if (steps >= MAX_SUBSTEPS) this.accumulator = 0;
 
-    const alpha = this.accumulator / FIXED_TIMESTEP;
+    const alpha = this.accumulator / this.fixedTimestep;
     for (const fn of this.renderFns) fn(alpha);
 
     this.renderer.render(this.scene, this.camera);

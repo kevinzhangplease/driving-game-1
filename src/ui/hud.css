@@ -12,6 +12,14 @@
   color: #eee;
 }
 
+/* On touch devices the on-screen drive/steer buttons sit at the bottom
+   corners, so lift the HUD clear of them. */
+@media (hover: none), (pointer: coarse) {
+  #hud {
+    bottom: 104px;
+  }
+}
+
 .hud-dial {
   display: block;
 }

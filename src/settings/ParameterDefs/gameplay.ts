@@ -71,10 +71,16 @@ export const gameplayParams: ParamDef[] = [
   stub('gameplay.collisionDamage', 'Collision Damage', 'gameplay', false, 'toggle', {
     tooltip: 'Reserved for a damage/health system; the chill design intentionally has no fail states yet.',
   }),
-  stub('gameplay.fixedTimestepHz', 'Physics Rate (Hz)', 'gameplay', 60, 'slider', {
+  {
+    id: 'gameplay.fixedTimestepHz',
+    label: 'Physics Rate (Hz)',
+    category: 'gameplay',
+    widget: 'slider',
+    defaultValue: 60,
     min: 30,
     max: 120,
     step: 10,
-    tooltip: 'Reserved for a tunable physics tick rate; needs accumulator/timestep rework to change live.',
-  }),
+    tooltip: 'Fixed-update/physics ticks per second. Higher is smoother and more accurate but costs more CPU.',
+    wired: true,
+  },
 ];

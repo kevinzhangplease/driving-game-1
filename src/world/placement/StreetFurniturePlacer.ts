@@ -1,7 +1,14 @@
 import type { RoadGraph, RoadSegment } from '../roads/RoadGraph';
 import { hash01 } from './PlacementHash';
 
-export type FurnitureKind = 'lamp' | 'bench' | 'trashCan' | 'fireHydrant';
+export type FurnitureKind =
+  | 'lamp'
+  | 'bench'
+  | 'trashCan'
+  | 'fireHydrant'
+  | 'busStop'
+  | 'billboard'
+  | 'fence';
 
 export interface FurnitureInstance {
   x: number;
@@ -18,6 +25,9 @@ export interface StreetFurnitureParams {
   benchDensity: number;
   trashCanDensity: number;
   fireHydrantDensity: number;
+  busStopChance: number;
+  billboardChance: number;
+  fenceDensity: number;
 }
 
 export const defaultStreetFurnitureParams: StreetFurnitureParams = {
@@ -28,6 +38,9 @@ export const defaultStreetFurnitureParams: StreetFurnitureParams = {
   benchDensity: 0.15,
   trashCanDensity: 0.15,
   fireHydrantDensity: 0.1,
+  busStopChance: 0.05,
+  billboardChance: 0.03,
+  fenceDensity: 0.1,
 };
 
 const KIND_SALT: Record<FurnitureKind, number> = {
@@ -35,6 +48,9 @@ const KIND_SALT: Record<FurnitureKind, number> = {
   bench: 310,
   trashCan: 320,
   fireHydrant: 330,
+  busStop: 340,
+  billboard: 350,
+  fence: 360,
 };
 
 // Same per-segment candidate-slot approach as BuildingPlacer/TreePlacer:
@@ -56,12 +72,23 @@ export function placeStreetFurniture(
 
   const result: FurnitureInstance[] = [];
   const segments = roadGraph.segmentsNear(centerX, centerZ);
-  const kinds: FurnitureKind[] = ['lamp', 'bench', 'trashCan', 'fireHydrant'];
+  const kinds: FurnitureKind[] = [
+    'lamp',
+    'bench',
+    'trashCan',
+    'fireHydrant',
+    'busStop',
+    'billboard',
+    'fence',
+  ];
   const densities: Record<FurnitureKind, number> = {
     lamp: params.lampPostDensity,
     bench: params.benchDensity,
     trashCan: params.trashCanDensity,
     fireHydrant: params.fireHydrantDensity,
+    busStop: params.busStopChance,
+    billboard: params.billboardChance,
+    fence: params.fenceDensity,
   };
 
   for (const seg of segments) {

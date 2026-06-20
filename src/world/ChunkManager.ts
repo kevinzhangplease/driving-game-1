@@ -7,6 +7,7 @@ import { RoadGraph, defaultRoadGraphParams, type RoadGraphParams } from './roads
 import { defaultBuildingPlacerParams } from './placement/BuildingPlacer';
 import { defaultTreePlacerParams } from './placement/TreePlacer';
 import { defaultStreetFurnitureParams } from './placement/StreetFurniturePlacer';
+import { defaultGroundCoverParams } from './placement/GroundCoverPlacer';
 import { defaultRoadStyleParams } from './terrain/TerrainMesh';
 
 const MAX_CHUNK_CREATIONS_PER_UPDATE = 4;
@@ -41,9 +42,13 @@ export class ChunkManager {
       tree: { ...defaultTreePlacerParams },
       signsEnabled: true,
       streetFurniture: { ...defaultStreetFurnitureParams },
+      groundCover: { ...defaultGroundCoverParams },
       roadStyle: { ...defaultRoadStyleParams },
       buildingColorPalette: 'neutral',
       vegetationSeasonalTint: 'summer',
+      canopyShape: 'conical',
+      biomeType: 'temperate',
+      roofVariety: 0.5,
     };
   }
 
