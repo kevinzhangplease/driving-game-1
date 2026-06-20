@@ -1,12 +1,21 @@
 import './topbar.css';
 
-// Always-visible top-right buttons so the world settings panel and key
-// binding menu can be opened by clicking/tapping, not just via keyboard
-// shortcuts (P / Escape).
+// Always-visible top-right buttons so the world settings panel, key
+// bindings menu, and camera view can all be changed by clicking/tapping,
+// not just via keyboard shortcuts (P / Escape / C).
 export class TopBarMenu {
-  constructor(onOpenSettings: () => void, onOpenControls: () => void) {
+  private cameraBtn: HTMLButtonElement;
+
+  constructor(onOpenSettings: () => void, onOpenControls: () => void, onCycleCamera: () => void) {
     const root = document.createElement('div');
     root.id = 'topbar-menu';
+
+    this.cameraBtn = document.createElement('button');
+    this.cameraBtn.className = 'topbar-btn';
+    this.cameraBtn.textContent = '📷';
+    this.cameraBtn.setAttribute('aria-label', 'Cycle camera view');
+    this.cameraBtn.title = 'Camera View';
+    this.cameraBtn.addEventListener('click', onCycleCamera);
 
     const controlsBtn = document.createElement('button');
     controlsBtn.className = 'topbar-btn';
@@ -22,7 +31,11 @@ export class TopBarMenu {
     settingsBtn.title = 'World Settings';
     settingsBtn.addEventListener('click', onOpenSettings);
 
-    root.append(controlsBtn, settingsBtn);
+    root.append(this.cameraBtn, controlsBtn, settingsBtn);
     document.body.appendChild(root);
+  }
+
+  setCameraLabel(label: string): void {
+    this.cameraBtn.title = `Camera: ${label}`;
   }
 }

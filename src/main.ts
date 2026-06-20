@@ -4,7 +4,7 @@ import { Engine } from '@/core/Engine';
 import { initPhysics, PhysicsWorld } from '@/core/PhysicsWorld';
 import { VehicleController } from '@/vehicle/VehicleController';
 import { CarVisual } from '@/vehicle/CarVisual';
-import { ChaseCamera } from '@/vehicle/ChaseCamera';
+import { ChaseCamera, cameraModeLabels } from '@/vehicle/ChaseCamera';
 import { defaultVehicleTuning } from '@/vehicle/VehicleTuning';
 import { InputManager } from '@/input/InputManager';
 import { KeyBindings } from '@/input/KeyBindings';
@@ -63,7 +63,7 @@ async function main() {
   const carVisual = new CarVisual(vehicle, vehicle.chassis, tuning);
   engine.scene.add(carVisual.group);
 
-  const chaseCamera = new ChaseCamera(engine.camera);
+  const chaseCamera = new ChaseCamera(engine.camera, tuning);
   const input = new InputManager();
   const keyBindings = new KeyBindings();
   const rebindMenu = new RebindMenu(keyBindings, input);
@@ -75,10 +75,12 @@ async function main() {
 
   const settingsStore = new SettingsStore(allParams);
   const settingsPanel = new SettingsPanel(settingsStore);
-  new TopBarMenu(
+  const topBar = new TopBarMenu(
     () => settingsPanel.toggle(),
     () => rebindMenu.toggle(),
+    () => topBar.setCameraLabel(cameraModeLabels[chaseCamera.cycleMode()]),
   );
+  topBar.setCameraLabel(cameraModeLabels[chaseCamera.getMode()]);
   bindWorldSettings(settingsStore, {
     chunkManager,
     mouseSteering,
@@ -92,6 +94,7 @@ async function main() {
 
   let openSettingsWasHeld = false;
   let openWorldSettingsWasHeld = false;
+  let cameraToggleWasHeld = false;
 
   engine.onFixedUpdate((dt) => {
     const openSettingsHeld = input.isActionHeld(keyBindings, 'openSettings');
@@ -105,6 +108,12 @@ async function main() {
       settingsPanel.toggle();
     }
     openWorldSettingsWasHeld = openWorldSettingsHeld;
+
+    const cameraToggleHeld = input.isActionHeld(keyBindings, 'cameraToggle');
+    if (cameraToggleHeld && !cameraToggleWasHeld) {
+      topBar.setCameraLabel(cameraModeLabels[chaseCamera.cycleMode()]);
+    }
+    cameraToggleWasHeld = cameraToggleHeld;
 
     const throttle =
       input.isActionHeld(keyBindings, 'throttle') || touchControls.isHeld('throttle') ? 1 : 0;
