@@ -2,11 +2,12 @@ import * as THREE from 'three';
 import RAPIER from '@dimforge/rapier3d-compat';
 import type { ChunkCoord } from './ChunkKey';
 import type { HeightField } from './terrain/HeightField';
+import type { RoadGraph } from './roads/RoadGraph';
 import { buildTerrainGrid, buildTerrainMesh } from './terrain/TerrainMesh';
 
-const COLOR_EVEN = 0x4a7c59;
-const COLOR_ODD = 0x457355;
-const TERRAIN_SEGMENTS = 12;
+const COLOR_EVEN: [number, number, number] = [0.29, 0.49, 0.35];
+const COLOR_ODD: [number, number, number] = [0.27, 0.45, 0.33];
+const TERRAIN_SEGMENTS = 16;
 
 export class Chunk {
   readonly coord: ChunkCoord;
@@ -23,6 +24,7 @@ export class Chunk {
     coord: ChunkCoord,
     chunkSize: number,
     heightField: HeightField,
+    roadGraph: RoadGraph,
   ) {
     this.coord = coord;
     this.scene = scene;
@@ -32,10 +34,17 @@ export class Chunk {
     const centerZ = (coord.cz + 0.5) * chunkSize;
     const isEven = (coord.cx + coord.cz) % 2 === 0;
 
-    const grid = buildTerrainGrid(heightField, centerX, centerZ, chunkSize, TERRAIN_SEGMENTS);
+    const grid = buildTerrainGrid(
+      heightField,
+      roadGraph,
+      centerX,
+      centerZ,
+      chunkSize,
+      TERRAIN_SEGMENTS,
+      isEven ? COLOR_EVEN : COLOR_ODD,
+    );
 
-    const material = new THREE.MeshStandardMaterial({ color: isEven ? COLOR_EVEN : COLOR_ODD });
-    this.mesh = buildTerrainMesh(grid, material);
+    this.mesh = buildTerrainMesh(grid);
     this.mesh.position.set(centerX, 0, centerZ);
     scene.add(this.mesh);
 

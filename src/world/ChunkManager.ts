@@ -3,6 +3,7 @@ import RAPIER from '@dimforge/rapier3d-compat';
 import { Chunk } from './Chunk';
 import { chunkKey, worldToChunkCoord, type ChunkCoord } from './ChunkKey';
 import { HeightField, defaultHeightFieldParams } from './terrain/HeightField';
+import { RoadGraph, defaultRoadGraphParams } from './roads/RoadGraph';
 
 const MAX_CHUNK_CREATIONS_PER_UPDATE = 4;
 
@@ -10,6 +11,7 @@ export class ChunkManager {
   readonly chunkSize: number;
   readonly loadRadius: number;
   readonly heightField: HeightField;
+  readonly roadGraph: RoadGraph;
   private rapier: typeof RAPIER;
   private scene: THREE.Scene;
   private world: RAPIER.World;
@@ -28,6 +30,7 @@ export class ChunkManager {
     this.chunkSize = chunkSize;
     this.loadRadius = loadRadius;
     this.heightField = new HeightField(defaultHeightFieldParams);
+    this.roadGraph = new RoadGraph(defaultRoadGraphParams);
   }
 
   update(playerWorldX: number, playerWorldZ: number): void {
@@ -52,6 +55,7 @@ export class ChunkManager {
         { cx, cz },
         this.chunkSize,
         this.heightField,
+        this.roadGraph,
       );
       this.chunks.set(key, chunk);
       creationsThisUpdate++;
