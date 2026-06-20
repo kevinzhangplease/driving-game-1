@@ -10,7 +10,7 @@ export class Engine {
   readonly renderer: THREE.WebGLRenderer;
   readonly scene: THREE.Scene;
   readonly camera: THREE.PerspectiveCamera;
-  readonly clock: THREE.Clock;
+  readonly timer: THREE.Timer;
 
   private updateFns: UpdateFn[] = [];
   private renderFns: RenderFn[] = [];
@@ -33,7 +33,8 @@ export class Engine {
     );
     this.camera.position.set(0, 5, 10);
 
-    this.clock = new THREE.Clock();
+    this.timer = new THREE.Timer();
+    this.timer.connect(document);
 
     window.addEventListener('resize', this.onResize);
   }
@@ -49,7 +50,6 @@ export class Engine {
   start(): void {
     if (this.running) return;
     this.running = true;
-    this.clock.start();
     this.renderer.setAnimationLoop(this.tick);
   }
 
@@ -58,8 +58,9 @@ export class Engine {
     this.renderer.setAnimationLoop(null);
   }
 
-  private tick = (): void => {
-    const frameDt = Math.min(this.clock.getDelta(), 0.1);
+  private tick = (timestamp: number): void => {
+    this.timer.update(timestamp);
+    const frameDt = Math.min(this.timer.getDelta(), 0.1);
     this.accumulator += frameDt;
 
     let steps = 0;
