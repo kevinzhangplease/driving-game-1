@@ -1,0 +1,53 @@
+#touch-controls {
+  position: fixed;
+  inset: 0;
+  z-index: 850;
+  pointer-events: none;
+}
+
+/* Only show on touch-primary devices; desktop mouse users keep keyboard/mouse controls. */
+@media (hover: hover) and (pointer: fine) {
+  #touch-controls {
+    display: none;
+  }
+}
+
+.touch-group {
+  position: absolute;
+  bottom: 22px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  pointer-events: auto;
+}
+
+.touch-steer {
+  left: 18px;
+}
+
+.touch-drive {
+  right: 18px;
+}
+
+.touch-btn {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  background: rgba(20, 24, 28, 0.55);
+  color: #eee;
+  font-size: 24px;
+  font-family: system-ui, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.touch-btn.active {
+  background: rgba(74, 125, 255, 0.55);
+  border-color: #4a7dff;
+}

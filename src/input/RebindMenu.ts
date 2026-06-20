@@ -31,10 +31,11 @@ export class RebindMenu {
     this.root = document.createElement('div');
     this.root.id = 'rebind-menu';
     this.root.style.cssText = [
-      'position:fixed', 'top:12px', 'right:12px', 'z-index:1000',
+      'position:fixed', 'top:64px', 'right:12px', 'z-index:1000',
       'background:rgba(20,20,24,0.85)', 'color:#eee',
       'font-family:system-ui,sans-serif', 'font-size:13px',
       'padding:10px 12px', 'border-radius:8px', 'min-width:200px',
+      'max-height:calc(100vh - 80px)', 'overflow-y:auto',
       'display:none',
     ].join(';');
     document.body.appendChild(this.root);

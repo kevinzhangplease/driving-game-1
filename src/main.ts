@@ -10,6 +10,7 @@ import { InputManager } from '@/input/InputManager';
 import { KeyBindings } from '@/input/KeyBindings';
 import { RebindMenu } from '@/input/RebindMenu';
 import { MouseSteering } from '@/input/MouseSteering';
+import { TouchControls } from '@/input/TouchControls';
 import { ChunkManager } from '@/world/ChunkManager';
 import { SettingsStore } from '@/settings/SettingsStore';
 import { allParams } from '@/settings/ParameterDefs';
@@ -17,6 +18,7 @@ import { SettingsPanel } from '@/settings/ui/SettingsPanel';
 import { bindWorldSettings } from '@/settings/WorldSettingsBinding';
 import { HUD } from '@/ui/HUD';
 import { Minimap } from '@/ui/Minimap';
+import { TopBarMenu } from '@/ui/TopBarMenu';
 
 async function main() {
   const app = document.querySelector<HTMLDivElement>('#app')!;
@@ -66,12 +68,17 @@ async function main() {
   const keyBindings = new KeyBindings();
   const rebindMenu = new RebindMenu(keyBindings, input);
   const mouseSteering = new MouseSteering(app);
+  const touchControls = new TouchControls();
 
   const hud = new HUD();
   const minimap = new Minimap();
 
   const settingsStore = new SettingsStore(allParams);
   const settingsPanel = new SettingsPanel(settingsStore);
+  new TopBarMenu(
+    () => settingsPanel.toggle(),
+    () => rebindMenu.toggle(),
+  );
   bindWorldSettings(settingsStore, {
     chunkManager,
     mouseSteering,
@@ -99,8 +106,10 @@ async function main() {
     }
     openWorldSettingsWasHeld = openWorldSettingsHeld;
 
-    const throttle = input.isActionHeld(keyBindings, 'throttle') ? 1 : 0;
-    const brakeKey = input.isActionHeld(keyBindings, 'brake') ? 1 : 0;
+    const throttle =
+      input.isActionHeld(keyBindings, 'throttle') || touchControls.isHeld('throttle') ? 1 : 0;
+    const brakeKey =
+      input.isActionHeld(keyBindings, 'brake') || touchControls.isHeld('brake') ? 1 : 0;
     // Reverse: if stationary/slow and holding "brake" key, treat as reverse throttle instead.
     const speed = vehicle.currentSpeed();
     let finalThrottle = throttle;
@@ -119,8 +128,8 @@ async function main() {
       // convention is "steerRight" contributing negatively, so flip sign.
       steer = -mouseSteering.getSteer();
     } else {
-      const steerLeft = input.isActionHeld(keyBindings, 'steerLeft');
-      const steerRight = input.isActionHeld(keyBindings, 'steerRight');
+      const steerLeft = input.isActionHeld(keyBindings, 'steerLeft') || touchControls.isHeld('steerLeft');
+      const steerRight = input.isActionHeld(keyBindings, 'steerRight') || touchControls.isHeld('steerRight');
       steer = (steerLeft ? 1 : 0) - (steerRight ? 1 : 0);
     }
 
