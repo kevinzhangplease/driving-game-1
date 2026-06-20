@@ -5,7 +5,8 @@ export type ActionName =
   | 'steerRight'
   | 'handbrake'
   | 'cameraToggle'
-  | 'openSettings';
+  | 'openSettings'
+  | 'openWorldSettings';
 
 export type KeyBindingMap = Record<ActionName, string[]>;
 
@@ -19,6 +20,7 @@ export const defaultKeyBindings: KeyBindingMap = {
   handbrake: ['Space'],
   cameraToggle: ['KeyC'],
   openSettings: ['Escape'],
+  openWorldSettings: ['KeyP'],
 };
 
 export const actionLabels: Record<ActionName, string> = {
@@ -28,7 +30,8 @@ export const actionLabels: Record<ActionName, string> = {
   steerRight: 'Steer Right',
   handbrake: 'Handbrake',
   cameraToggle: 'Toggle Camera',
-  openSettings: 'Open Settings',
+  openSettings: 'Open Controls Menu',
+  openWorldSettings: 'Open World Settings',
 };
 
 function cloneDefaults(): KeyBindingMap {

@@ -4,9 +4,15 @@ import type { ChunkCoord } from './ChunkKey';
 import type { HeightField } from './terrain/HeightField';
 import type { RoadGraph } from './roads/RoadGraph';
 import { buildTerrainGrid, buildTerrainMesh } from './terrain/TerrainMesh';
-import { placeBuildings, defaultBuildingPlacerParams } from './placement/BuildingPlacer';
-import { placeTrees, defaultTreePlacerParams } from './placement/TreePlacer';
+import { placeBuildings, type BuildingPlacerParams } from './placement/BuildingPlacer';
+import { placeTrees, type TreePlacerParams } from './placement/TreePlacer';
 import { placeSigns } from './placement/SignPlacer';
+
+export interface PlacementParams {
+  building: BuildingPlacerParams;
+  tree: TreePlacerParams;
+  signsEnabled: boolean;
+}
 
 const COLOR_EVEN: [number, number, number] = [0.29, 0.49, 0.35];
 const COLOR_ODD: [number, number, number] = [0.27, 0.45, 0.33];
@@ -40,6 +46,7 @@ export class Chunk {
     chunkSize: number,
     heightField: HeightField,
     roadGraph: RoadGraph,
+    placement: PlacementParams,
   ) {
     this.coord = coord;
     this.scene = scene;
@@ -71,7 +78,7 @@ export class Chunk {
       this.body,
     );
 
-    const buildings = placeBuildings(roadGraph, centerX, centerZ, chunkSize, defaultBuildingPlacerParams);
+    const buildings = placeBuildings(roadGraph, centerX, centerZ, chunkSize, placement.building);
     this.addBuildings(RAPIER_NS, buildings, heightField);
 
     const trees = placeTrees(
@@ -81,12 +88,14 @@ export class Chunk {
       centerX,
       centerZ,
       chunkSize,
-      defaultTreePlacerParams,
+      placement.tree,
     );
     this.addTrees(trees, heightField);
 
-    const signs = placeSigns(roadGraph, centerX, centerZ, chunkSize);
-    this.addSigns(signs, heightField);
+    if (placement.signsEnabled) {
+      const signs = placeSigns(roadGraph, centerX, centerZ, chunkSize);
+      this.addSigns(signs, heightField);
+    }
   }
 
   private addBuildings(

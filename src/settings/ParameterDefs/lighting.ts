@@ -1,0 +1,53 @@
+import { stub, type ParamDef } from '../ParameterRegistry';
+
+export const lightingParams: ParamDef[] = [
+  {
+    id: 'lighting.sunIntensity',
+    label: 'Sun Intensity',
+    category: 'lighting',
+    widget: 'slider',
+    defaultValue: 2,
+    min: 0,
+    max: 5,
+    step: 0.1,
+    tooltip: 'Brightness of the directional sunlight.',
+    wired: true,
+  },
+  {
+    id: 'lighting.ambientIntensity',
+    label: 'Ambient Intensity',
+    category: 'lighting',
+    widget: 'slider',
+    defaultValue: 1.2,
+    min: 0,
+    max: 3,
+    step: 0.1,
+    tooltip: 'Brightness of the soft hemisphere sky/ground fill light.',
+    wired: true,
+  },
+  {
+    id: 'lighting.timeOfDay',
+    label: 'Time of Day',
+    category: 'lighting',
+    widget: 'slider',
+    defaultValue: 12,
+    min: 0,
+    max: 24,
+    step: 0.5,
+    tooltip: 'Hour of day, controlling sun elevation and sky tint.',
+    wired: true,
+  },
+  stub('lighting.sunAzimuth', 'Sun Azimuth', 'lighting', 45, 'slider', { min: 0, max: 360, step: 5 }),
+  stub('lighting.shadowQuality', 'Shadow Quality', 'lighting', 'medium', 'select', {
+    options: [
+      { value: 'off', label: 'Off' },
+      { value: 'low', label: 'Low' },
+      { value: 'medium', label: 'Medium' },
+      { value: 'high', label: 'High' },
+    ],
+  }),
+  stub('lighting.streetLightDensity', 'Street Light Density', 'lighting', 0.3, 'slider', { min: 0, max: 1, step: 0.05 }),
+  stub('lighting.moonBrightness', 'Moon Brightness', 'lighting', 0.2, 'slider', { min: 0, max: 1, step: 0.05 }),
+  stub('lighting.colorTemperature', 'Color Temperature', 'lighting', 5500, 'slider', { min: 2000, max: 9000, step: 100 }),
+  stub('lighting.bloom', 'Bloom', 'lighting', 0.2, 'slider', { min: 0, max: 1, step: 0.05 }),
+];

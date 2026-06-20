@@ -1,0 +1,50 @@
+import { stub, type ParamDef } from '../ParameterRegistry';
+
+export const gameplayParams: ParamDef[] = [
+  {
+    id: 'gameplay.chunkLoadRadius',
+    label: 'Chunk Load Radius',
+    category: 'gameplay',
+    widget: 'slider',
+    defaultValue: 2,
+    min: 1,
+    max: 5,
+    step: 1,
+    tooltip: 'How many chunks out from the player are streamed in. Higher sees further but costs more memory/CPU.',
+    wired: true,
+  },
+  {
+    id: 'gameplay.mouseSteeringSensitivity',
+    label: 'Mouse Steering Sensitivity',
+    category: 'gameplay',
+    widget: 'slider',
+    defaultValue: 0.0022,
+    min: 0.0005,
+    max: 0.01,
+    step: 0.0005,
+    tooltip: 'How much steering offset accumulates per pixel of mouse movement while mouse-steering is active.',
+    wired: true,
+  },
+  {
+    id: 'gameplay.mouseSteeringLinearity',
+    label: 'Mouse Steering Linearity',
+    category: 'gameplay',
+    widget: 'slider',
+    defaultValue: 1.6,
+    min: 0.5,
+    max: 4,
+    step: 0.1,
+    tooltip: 'Exponent applied to the steering offset — above 1 gives a gentle dead-zone near center with sharper response at the extremes.',
+    wired: true,
+  },
+  stub('gameplay.unitsDisplay', 'Speed Units', 'gameplay', 'kph', 'select', {
+    options: [
+      { value: 'kph', label: 'km/h' },
+      { value: 'mph', label: 'mph' },
+    ],
+  }),
+  stub('gameplay.collisionDamage', 'Collision Damage', 'gameplay', false, 'toggle'),
+  stub('gameplay.restartOnFlip', 'Auto-Recover on Flip', 'gameplay', true, 'toggle'),
+  stub('gameplay.hudEnabled', 'Show HUD', 'gameplay', true, 'toggle'),
+  stub('gameplay.fixedTimestepHz', 'Physics Rate (Hz)', 'gameplay', 60, 'slider', { min: 30, max: 120, step: 10 }),
+];

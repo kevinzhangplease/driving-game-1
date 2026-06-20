@@ -1,0 +1,84 @@
+#settings-panel {
+  position: fixed;
+  top: 5%;
+  right: 2%;
+  width: min(420px, 90vw);
+  max-height: 90vh;
+  overflow-y: auto;
+  background: rgba(20, 24, 28, 0.92);
+  color: #eee;
+  font-family: system-ui, sans-serif;
+  font-size: 13px;
+  border-radius: 8px;
+  padding: 12px;
+  z-index: 1000;
+}
+
+#settings-panel.hidden {
+  display: none;
+}
+
+.settings-header h2 {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+
+.settings-header input[type='text'] {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+  border: 1px solid #444;
+  background: #1a1d20;
+  color: #eee;
+}
+
+.settings-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.settings-tabs button {
+  background: #2a2e33;
+  color: #ccc;
+  border: 1px solid #3a3f44;
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.settings-tabs button.active {
+  background: #4a7dff;
+  color: #fff;
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  border-bottom: 1px solid #2a2e33;
+}
+
+.settings-row.unwired label {
+  opacity: 0.5;
+}
+
+.settings-row label {
+  flex: 1 1 auto;
+  cursor: help;
+}
+
+.settings-row input[type='range'] {
+  flex: 1 1 120px;
+}
+
+.settings-value {
+  min-width: 3.5em;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}

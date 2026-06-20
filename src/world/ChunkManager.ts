@@ -1,17 +1,20 @@
 import * as THREE from 'three';
 import RAPIER from '@dimforge/rapier3d-compat';
-import { Chunk } from './Chunk';
+import { Chunk, type PlacementParams } from './Chunk';
 import { chunkKey, worldToChunkCoord, type ChunkCoord } from './ChunkKey';
-import { HeightField, defaultHeightFieldParams } from './terrain/HeightField';
-import { RoadGraph, defaultRoadGraphParams } from './roads/RoadGraph';
+import { HeightField, defaultHeightFieldParams, type HeightFieldParams } from './terrain/HeightField';
+import { RoadGraph, defaultRoadGraphParams, type RoadGraphParams } from './roads/RoadGraph';
+import { defaultBuildingPlacerParams } from './placement/BuildingPlacer';
+import { defaultTreePlacerParams } from './placement/TreePlacer';
 
 const MAX_CHUNK_CREATIONS_PER_UPDATE = 4;
 
 export class ChunkManager {
   readonly chunkSize: number;
-  readonly loadRadius: number;
-  readonly heightField: HeightField;
-  readonly roadGraph: RoadGraph;
+  loadRadius: number;
+  heightField: HeightField;
+  roadGraph: RoadGraph;
+  placement: PlacementParams;
   private rapier: typeof RAPIER;
   private scene: THREE.Scene;
   private world: RAPIER.World;
@@ -31,6 +34,28 @@ export class ChunkManager {
     this.loadRadius = loadRadius;
     this.heightField = new HeightField(defaultHeightFieldParams);
     this.roadGraph = new RoadGraph(defaultRoadGraphParams);
+    this.placement = {
+      building: { ...defaultBuildingPlacerParams },
+      tree: { ...defaultTreePlacerParams },
+      signsEnabled: true,
+    };
+  }
+
+  setHeightFieldParams(params: HeightFieldParams): void {
+    this.heightField = new HeightField(params);
+    this.regenerateAll();
+  }
+
+  setRoadGraphParams(params: RoadGraphParams): void {
+    this.roadGraph = new RoadGraph(params);
+    this.regenerateAll();
+  }
+
+  // Discards every loaded chunk so the next update() calls recreate them
+  // (budgeted, same as normal streaming) using the current params.
+  regenerateAll(): void {
+    for (const chunk of this.chunks.values()) chunk.dispose();
+    this.chunks.clear();
   }
 
   update(playerWorldX: number, playerWorldZ: number): void {
@@ -56,6 +81,7 @@ export class ChunkManager {
         this.chunkSize,
         this.heightField,
         this.roadGraph,
+        this.placement,
       );
       this.chunks.set(key, chunk);
       creationsThisUpdate++;

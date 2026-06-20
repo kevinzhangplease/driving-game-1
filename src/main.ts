@@ -11,6 +11,10 @@ import { KeyBindings } from '@/input/KeyBindings';
 import { RebindMenu } from '@/input/RebindMenu';
 import { MouseSteering } from '@/input/MouseSteering';
 import { ChunkManager } from '@/world/ChunkManager';
+import { SettingsStore } from '@/settings/SettingsStore';
+import { allParams } from '@/settings/ParameterDefs';
+import { SettingsPanel } from '@/settings/ui/SettingsPanel';
+import { bindWorldSettings } from '@/settings/WorldSettingsBinding';
 
 async function main() {
   const app = document.querySelector<HTMLDivElement>('#app')!;
@@ -51,7 +55,12 @@ async function main() {
   const rebindMenu = new RebindMenu(keyBindings, input);
   const mouseSteering = new MouseSteering(app);
 
+  const settingsStore = new SettingsStore(allParams);
+  const settingsPanel = new SettingsPanel(settingsStore);
+  bindWorldSettings(settingsStore, { chunkManager, mouseSteering, scene: engine.scene, sun, hemiLight });
+
   let openSettingsWasHeld = false;
+  let openWorldSettingsWasHeld = false;
 
   engine.onFixedUpdate((dt) => {
     const openSettingsHeld = input.isActionHeld(keyBindings, 'openSettings');
@@ -59,6 +68,12 @@ async function main() {
       rebindMenu.toggle();
     }
     openSettingsWasHeld = openSettingsHeld;
+
+    const openWorldSettingsHeld = input.isActionHeld(keyBindings, 'openWorldSettings');
+    if (openWorldSettingsHeld && !openWorldSettingsWasHeld) {
+      settingsPanel.toggle();
+    }
+    openWorldSettingsWasHeld = openWorldSettingsHeld;
 
     const throttle = input.isActionHeld(keyBindings, 'throttle') ? 1 : 0;
     const brakeKey = input.isActionHeld(keyBindings, 'brake') ? 1 : 0;
