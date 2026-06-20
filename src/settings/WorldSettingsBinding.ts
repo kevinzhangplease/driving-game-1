@@ -106,6 +106,9 @@ export function bindWorldSettings(store: SettingsStore, targets: WorldSettingsTa
       macroCellSize: store.getNumber('roads.macroCellSize'),
       edgeProbability: store.getNumber('roads.edgeProbability'),
       nodeJitter: store.getNumber('roads.nodeJitter'),
+      curvatureStrictness: store.getNumber('roads.curvatureStrictness'),
+      highwayChance: store.getNumber('roads.highwayChance'),
+      bridgeChance: store.getNumber('roads.bridgeChance'),
     });
     repositionVehicleSafely();
   }, 250);
@@ -264,7 +267,15 @@ export function bindWorldSettings(store: SettingsStore, targets: WorldSettingsTa
     'terrain.plateauBias',
     'terrain.rockiness',
   ]);
-  const roadIds = new Set(['roads.seed', 'roads.macroCellSize', 'roads.edgeProbability', 'roads.nodeJitter']);
+  const roadIds = new Set([
+    'roads.seed',
+    'roads.macroCellSize',
+    'roads.edgeProbability',
+    'roads.nodeJitter',
+    'roads.curvatureStrictness',
+    'roads.highwayChance',
+    'roads.bridgeChance',
+  ]);
   const roadStyleIds = new Set([
     'roads.width',
     'roads.shoulderWidth',

@@ -50,7 +50,10 @@ export function buildTerrainGrid(
   const verticesPerSide = segments + 1;
   const positions = new Float32Array(verticesPerSide * verticesPerSide * 3);
   const colors = new Float32Array(verticesPerSide * verticesPerSide * 3);
-  const nearbySegments = roadGraph.segmentsNear(centerX, centerZ);
+  // Elevated (highway/bridge) segments float above the terrain via their own
+  // deck mesh, so the ground underneath should stay natural rather than be
+  // flattened/painted like a normal at-grade road.
+  const nearbySegments = roadGraph.segmentsNear(centerX, centerZ).filter((s) => s.kind === 'normal');
   const nearbyNodes = roadGraph.nodesNear(centerX, centerZ);
   const roadHalfWidth = roadStyle.width / 2;
   const laneHalfWidth = roadStyle.laneCount > 1 ? roadHalfWidth / roadStyle.laneCount : 0;

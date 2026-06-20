@@ -10,6 +10,8 @@ import { placeSigns } from './placement/SignPlacer';
 import { placeStreetFurniture, type StreetFurnitureParams } from './placement/StreetFurniturePlacer';
 import { placeGroundCover, type GroundCoverParams } from './placement/GroundCoverPlacer';
 import { hash01 } from './placement/PlacementHash';
+import { placeElevatedRoadPieces } from './roads/ElevatedRoadPlacer';
+import type { RoadSegment } from './roads/RoadGraph';
 
 export type ColorPalette = 'neutral' | 'warm' | 'cool';
 export type SeasonalTint = 'spring' | 'summer' | 'autumn' | 'winter';
@@ -64,6 +66,14 @@ const BUS_STOP_COLOR = new THREE.Color(0.3, 0.35, 0.45);
 const BILLBOARD_COLOR = new THREE.Color(0.85, 0.85, 0.8);
 const FENCE_COLOR = new THREE.Color(0.45, 0.38, 0.3);
 const ROOF_COLOR = new THREE.Color(0.4, 0.22, 0.18);
+const HIGHWAY_DECK_COLOR = new THREE.Color(0.32, 0.32, 0.34);
+const BRIDGE_DECK_COLOR = new THREE.Color(0.42, 0.4, 0.36);
+const PILLAR_COLOR = new THREE.Color(0.5, 0.5, 0.5);
+const HIGHWAY_CLEARANCE = 5;
+const BRIDGE_CLEARANCE = 2;
+const HIGHWAY_WIDTH_MULTIPLIER = 1.5;
+const DECK_THICKNESS = 0.5;
+const PILLAR_RADIUS = 0.4;
 const GRASS_COLOR = new THREE.Color(0.32, 0.5, 0.2);
 const SHRUB_COLOR = new THREE.Color(0.2, 0.38, 0.2);
 const FLOWER_PALETTE = [
@@ -190,6 +200,9 @@ export class Chunk {
 
     const furniture = placeStreetFurniture(roadGraph, centerX, centerZ, chunkSize, placement.streetFurniture);
     this.addStreetFurniture(furniture, heightField);
+
+    const elevatedPieces = placeElevatedRoadPieces(roadGraph, centerX, centerZ, chunkSize);
+    this.addElevatedRoads(RAPIER_NS, elevatedPieces, heightField, placement.roadStyle);
   }
 
   private addBuildings(
@@ -438,6 +451,84 @@ export class Chunk {
       instanced.instanceMatrix.needsUpdate = true;
       this.scene.add(instanced);
       this.instancedMeshes.push(instanced);
+    }
+  }
+
+  private addElevatedRoads(
+    RAPIER_NS: typeof RAPIER,
+    pieces: RoadSegment[],
+    heightField: HeightField,
+    roadStyle: RoadStyleParams,
+  ): void {
+    const highwayPieces = pieces.filter((p) => p.kind === 'highway');
+    const bridgePieces = pieces.filter((p) => p.kind === 'bridge');
+
+    const specs: Array<{ pieces: RoadSegment[]; color: THREE.Color; width: number; clearance: number }> = [
+      { pieces: highwayPieces, color: HIGHWAY_DECK_COLOR, width: roadStyle.width * HIGHWAY_WIDTH_MULTIPLIER, clearance: HIGHWAY_CLEARANCE },
+      { pieces: bridgePieces, color: BRIDGE_DECK_COLOR, width: roadStyle.width, clearance: BRIDGE_CLEARANCE },
+    ];
+
+    const matrix = new THREE.Matrix4();
+    const bodyPos = this.body.translation();
+    const pillarPositions: Array<{ x: number; z: number; deckY: number; groundY: number }> = [];
+
+    for (const spec of specs) {
+      if (spec.pieces.length === 0) continue;
+      const deck = new THREE.InstancedMesh(boxGeometry, new THREE.MeshStandardMaterial({ color: spec.color }), spec.pieces.length);
+      deck.castShadow = true;
+      deck.receiveShadow = true;
+
+      spec.pieces.forEach((seg, i) => {
+        const dx = seg.bx - seg.ax;
+        const dz = seg.bz - seg.az;
+        const length = Math.hypot(dx, dz);
+        const midX = (seg.ax + seg.bx) / 2;
+        const midZ = (seg.az + seg.bz) / 2;
+        const groundY = (heightField.sample(seg.ax, seg.az) + heightField.sample(seg.bx, seg.bz)) / 2;
+        const deckY = groundY + spec.clearance;
+        const rotationY = length > 1e-3 ? Math.atan2(dx, dz) : 0;
+        const rotation = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), rotationY);
+
+        matrix.compose(
+          new THREE.Vector3(midX, deckY, midZ),
+          rotation,
+          new THREE.Vector3(spec.width, DECK_THICKNESS, Math.max(length, 0.01)),
+        );
+        deck.setMatrixAt(i, matrix);
+
+        const deckCollider = this.world.createCollider(
+          RAPIER_NS.ColliderDesc.cuboid(spec.width / 2, DECK_THICKNESS / 2, Math.max(length, 0.01) / 2)
+            .setTranslation(midX - bodyPos.x, deckY, midZ - bodyPos.z)
+            .setRotation(rotation),
+          this.body,
+        );
+        this.buildingColliders.push(deckCollider);
+
+        if (spec.clearance - DECK_THICKNESS / 2 > 1.5) {
+          pillarPositions.push({ x: midX, z: midZ, deckY, groundY });
+        }
+      });
+
+      deck.instanceMatrix.needsUpdate = true;
+      this.scene.add(deck);
+      this.instancedMeshes.push(deck);
+    }
+
+    if (pillarPositions.length > 0) {
+      const pillars = new THREE.InstancedMesh(trunkGeometry, new THREE.MeshStandardMaterial({ color: PILLAR_COLOR }), pillarPositions.length);
+      pillars.castShadow = true;
+      pillarPositions.forEach((p, i) => {
+        const height = p.deckY - p.groundY;
+        matrix.compose(
+          new THREE.Vector3(p.x, p.groundY + height / 2, p.z),
+          new THREE.Quaternion(),
+          new THREE.Vector3(PILLAR_RADIUS * 2, height, PILLAR_RADIUS * 2),
+        );
+        pillars.setMatrixAt(i, matrix);
+      });
+      pillars.instanceMatrix.needsUpdate = true;
+      this.scene.add(pillars);
+      this.instancedMeshes.push(pillars);
     }
   }
 

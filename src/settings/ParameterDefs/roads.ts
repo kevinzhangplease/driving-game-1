@@ -1,4 +1,4 @@
-import { stub, type ParamDef } from '../ParameterRegistry';
+import type { ParamDef } from '../ParameterRegistry';
 
 export const roadParams: ParamDef[] = [
   {
@@ -106,22 +106,40 @@ export const roadParams: ParamDef[] = [
     tooltip: 'Extra flattening radius around intersections, so multiple roads meet without a height step.',
     wired: true,
   },
-  stub('roads.curvatureStrictness', 'Curvature Strictness', 'roads', 0.5, 'slider', {
+  {
+    id: 'roads.curvatureStrictness',
+    label: 'Curvature Strictness',
+    category: 'roads',
+    widget: 'slider',
+    defaultValue: 0.5,
     min: 0,
     max: 1,
     step: 0.05,
-    tooltip: 'Reserved for curved (non-straight) road segments; needs a spline-based road geometry system.',
-  }),
-  stub('roads.highwayChance', 'Highway Chance', 'roads', 0.1, 'slider', {
+    tooltip: '1 keeps every road edge dead straight; lower values let edges bow into a smooth curve between intersections.',
+    wired: true,
+  },
+  {
+    id: 'roads.highwayChance',
+    label: 'Highway Chance',
+    category: 'roads',
+    widget: 'slider',
+    defaultValue: 0.1,
     min: 0,
     max: 1,
     step: 0.05,
-    tooltip: 'Reserved for a future elevated-highway road type; needs new road geometry.',
-  }),
-  stub('roads.bridgeChance', 'Bridge Chance', 'roads', 0.05, 'slider', {
+    tooltip: 'Fraction of road edges built as a wider, elevated highway deck on support pillars instead of an at-grade road.',
+    wired: true,
+  },
+  {
+    id: 'roads.bridgeChance',
+    label: 'Bridge Chance',
+    category: 'roads',
+    widget: 'slider',
+    defaultValue: 0.05,
     min: 0,
     max: 1,
     step: 0.05,
-    tooltip: 'Reserved for a future bridge-over-terrain system; needs new road geometry.',
-  }),
+    tooltip: 'Fraction of road edges built as an elevated bridge deck spanning between its two intersections.',
+    wired: true,
+  },
 ];
