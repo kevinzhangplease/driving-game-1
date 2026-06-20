@@ -5,7 +5,6 @@ import type { VehicleTuning } from './VehicleTuning';
 
 export class CarVisual {
   readonly group: THREE.Group;
-  private chassisMesh: THREE.Mesh;
   private wheelMeshes: THREE.Group[] = [];
   private vehicle: VehicleController;
   private chassis: RAPIER.RigidBody;
@@ -16,12 +15,27 @@ export class CarVisual {
     this.group = new THREE.Group();
 
     const { x: hx, y: hy, z: hz } = tuning.chassisHalfExtents;
-    this.chassisMesh = new THREE.Mesh(
-      new THREE.BoxGeometry(hx * 2, hy * 2, hz * 2),
-      new THREE.MeshStandardMaterial({ color: 0x2a6fdb }),
-    );
-    this.chassisMesh.position.y = tuning.centerOfMassHeight;
-    this.group.add(this.chassisMesh);
+    const bodyMaterial = new THREE.MeshStandardMaterial({
+      color: 0x2a6fdb,
+      transparent: true,
+      opacity: 0.55,
+    });
+
+    // Lower body: full width/length, slightly shorter than the physics
+    // chassis box so the cabin reads as a distinct volume on top.
+    const lowerHeight = hy * 1.3;
+    const lowerBody = new THREE.Mesh(new THREE.BoxGeometry(hx * 2, lowerHeight, hz * 2), bodyMaterial);
+    lowerBody.position.y = tuning.centerOfMassHeight - hy * 0.35;
+    this.group.add(lowerBody);
+
+    // Cabin/greenhouse: narrower and shorter, set back slightly from the
+    // nose like a sedan roofline.
+    const cabinWidth = hx * 1.5;
+    const cabinHeight = hy * 1.1;
+    const cabinLength = hz * 1.2;
+    const cabin = new THREE.Mesh(new THREE.BoxGeometry(cabinWidth, cabinHeight, cabinLength), bodyMaterial);
+    cabin.position.set(0, tuning.centerOfMassHeight + lowerHeight / 2 + cabinHeight / 2, -hz * 0.15);
+    this.group.add(cabin);
 
     for (let i = 0; i < vehicle.numWheels; i++) {
       const wheelGroup = new THREE.Group();

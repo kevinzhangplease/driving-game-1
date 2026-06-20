@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { SettingsStore } from './SettingsStore';
 import { ChunkManager } from '@/world/ChunkManager';
 import { MouseSteering } from '@/input/MouseSteering';
+import type { VehicleTuning } from '@/vehicle/VehicleTuning';
 import { defaultHeightFieldParams } from '@/world/terrain/HeightField';
 
 function debounce(fn: () => void, ms: number): () => void {
@@ -18,6 +19,7 @@ export interface WorldSettingsTargets {
   scene: THREE.Scene;
   sun: THREE.DirectionalLight;
   hemiLight: THREE.HemisphereLight;
+  vehicleTuning: VehicleTuning;
 }
 
 // Subscribes to every wired ParamDef and applies it to the live world.
@@ -25,7 +27,7 @@ export interface WorldSettingsTargets {
 // slider doesn't stutter); lighting/fog/mouse-steering apply immediately
 // since they're cheap.
 export function bindWorldSettings(store: SettingsStore, targets: WorldSettingsTargets): void {
-  const { chunkManager, mouseSteering, scene, sun, hemiLight } = targets;
+  const { chunkManager, mouseSteering, scene, sun, hemiLight, vehicleTuning } = targets;
 
   const applyHeightField = debounce(() => {
     chunkManager.setHeightFieldParams({
@@ -93,6 +95,10 @@ export function bindWorldSettings(store: SettingsStore, targets: WorldSettingsTa
     chunkManager.loadRadius = store.getNumber('gameplay.chunkLoadRadius');
   };
 
+  const applyVehicleTuning = () => {
+    vehicleTuning.maxSteerAngle = (store.getNumber('vehicle.maxSteerAngleDeg') * Math.PI) / 180;
+  };
+
   const terrainIds = new Set([
     'terrain.seed',
     'terrain.baseFrequency',
@@ -125,9 +131,11 @@ export function bindWorldSettings(store: SettingsStore, targets: WorldSettingsTa
     else if (lightingIds.has(id)) applyLighting();
     else if (mouseIds.has(id)) applyMouseSteering();
     else if (id === 'gameplay.chunkLoadRadius') applyChunkLoadRadius();
+    else if (id === 'vehicle.maxSteerAngleDeg') applyVehicleTuning();
   });
 
   applyFog();
   applyLighting();
   applyMouseSteering();
+  applyVehicleTuning();
 }

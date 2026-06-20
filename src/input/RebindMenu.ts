@@ -61,13 +61,35 @@ export class RebindMenu {
     }
   }
 
+  hide(): void {
+    this.root.style.display = 'none';
+    this.listening = null;
+    this.input.setSuspended(false);
+  }
+
   private render(): void {
     this.root.innerHTML = '';
 
+    const titleRow = document.createElement('div');
+    titleRow.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:8px;';
+
     const title = document.createElement('div');
     title.textContent = 'Controls (click to rebind)';
-    title.style.cssText = 'font-weight:600;margin-bottom:8px;';
-    this.root.appendChild(title);
+    title.style.cssText = 'font-weight:600;';
+    titleRow.appendChild(title);
+
+    const closeBtn = document.createElement('button');
+    closeBtn.textContent = '×';
+    closeBtn.setAttribute('aria-label', 'Close controls menu');
+    closeBtn.style.cssText = [
+      'background:transparent', 'color:#ccc', 'border:1px solid #555',
+      'border-radius:4px', 'width:22px', 'height:22px', 'line-height:1',
+      'font-size:15px', 'cursor:pointer', 'flex-shrink:0',
+    ].join(';');
+    closeBtn.addEventListener('click', () => this.hide());
+    titleRow.appendChild(closeBtn);
+
+    this.root.appendChild(titleRow);
 
     for (const action of this.bindings.allActions()) {
       const row = document.createElement('div');

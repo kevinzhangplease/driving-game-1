@@ -8,6 +8,7 @@ import { vegetationParams } from './vegetation';
 import { weatherParams } from './weather';
 import { lightingParams } from './lighting';
 import { streetFurnitureParams } from './streetFurniture';
+import { vehicleParams } from './vehicle';
 import { gameplayParams } from './gameplay';
 
 export const allParams: ParamDef[] = [
@@ -20,5 +21,6 @@ export const allParams: ParamDef[] = [
   ...weatherParams,
   ...lightingParams,
   ...streetFurnitureParams,
+  ...vehicleParams,
   ...gameplayParams,
 ];

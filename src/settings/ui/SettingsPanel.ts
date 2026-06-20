@@ -26,8 +26,17 @@ export class SettingsPanel {
 
     const header = document.createElement('div');
     header.className = 'settings-header';
+    const titleRow = document.createElement('div');
+    titleRow.className = 'settings-title-row';
     const title = document.createElement('h2');
     title.textContent = 'World Settings';
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'settings-close';
+    closeBtn.textContent = '×';
+    closeBtn.setAttribute('aria-label', 'Close world settings');
+    closeBtn.addEventListener('click', () => this.hide());
+    titleRow.append(title, closeBtn);
+
     this.searchEl = document.createElement('input');
     this.searchEl.type = 'text';
     this.searchEl.placeholder = 'Search parameters...';
@@ -35,7 +44,7 @@ export class SettingsPanel {
       this.searchQuery = this.searchEl.value.toLowerCase();
       this.renderList();
     });
-    header.append(title, this.searchEl);
+    header.append(titleRow, this.searchEl);
 
     this.tabsEl = document.createElement('div');
     this.tabsEl.className = 'settings-tabs';
@@ -129,6 +138,11 @@ export class SettingsPanel {
   toggle(): void {
     this.visible = !this.visible;
     this.root.classList.toggle('hidden', !this.visible);
+  }
+
+  hide(): void {
+    this.visible = false;
+    this.root.classList.add('hidden');
   }
 
   isVisible(): boolean {

@@ -15,6 +15,7 @@ import { SettingsStore } from '@/settings/SettingsStore';
 import { allParams } from '@/settings/ParameterDefs';
 import { SettingsPanel } from '@/settings/ui/SettingsPanel';
 import { bindWorldSettings } from '@/settings/WorldSettingsBinding';
+import { HUD } from '@/ui/HUD';
 
 async function main() {
   const app = document.querySelector<HTMLDivElement>('#app')!;
@@ -57,7 +58,16 @@ async function main() {
 
   const settingsStore = new SettingsStore(allParams);
   const settingsPanel = new SettingsPanel(settingsStore);
-  bindWorldSettings(settingsStore, { chunkManager, mouseSteering, scene: engine.scene, sun, hemiLight });
+  bindWorldSettings(settingsStore, {
+    chunkManager,
+    mouseSteering,
+    scene: engine.scene,
+    sun,
+    hemiLight,
+    vehicleTuning: tuning,
+  });
+
+  const hud = new HUD();
 
   let openSettingsWasHeld = false;
   let openWorldSettingsWasHeld = false;
@@ -89,7 +99,6 @@ async function main() {
       }
     }
 
-    mouseSteering.update(dt);
     let steer: number;
     if (mouseSteering.isActive()) {
       // Mouse offset is positive when the mouse moves right; keyboard's
@@ -111,6 +120,7 @@ async function main() {
   engine.onRender((_alpha) => {
     carVisual.update();
     chaseCamera.update(carVisual.group, 1 / 60);
+    hud.update(vehicle.currentSpeed(), vehicle.getWheelState(0).steering, tuning.maxSteerAngle);
   });
 
   engine.start();

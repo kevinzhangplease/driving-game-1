@@ -18,9 +18,34 @@
   display: none;
 }
 
+.settings-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
 .settings-header h2 {
-  margin: 0 0 8px;
+  margin: 0;
   font-size: 16px;
+}
+
+.settings-close {
+  background: transparent;
+  color: #ccc;
+  border: 1px solid #444;
+  border-radius: 4px;
+  width: 24px;
+  height: 24px;
+  line-height: 1;
+  font-size: 16px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.settings-close:hover {
+  background: #3a3f44;
+  color: #fff;
 }
 
 .settings-header input[type='text'] {

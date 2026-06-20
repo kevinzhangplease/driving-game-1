@@ -8,6 +8,7 @@ export type ParamCategory =
   | 'weather'
   | 'lighting'
   | 'streetFurniture'
+  | 'vehicle'
   | 'gameplay';
 
 export const categoryLabels: Record<ParamCategory, string> = {
@@ -20,6 +21,7 @@ export const categoryLabels: Record<ParamCategory, string> = {
   weather: 'Weather & Atmosphere',
   lighting: 'Lighting & Time',
   streetFurniture: 'Street Furniture',
+  vehicle: 'Vehicle Tuning',
   gameplay: 'Gameplay & System',
 };
 

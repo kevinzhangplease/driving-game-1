@@ -11,7 +11,7 @@ export interface TerrainGrid {
 
 const ROAD_HALF_WIDTH = 4;
 const ROAD_FLATTEN_MARGIN = 6;
-const ROAD_COLOR: [number, number, number] = [0.32, 0.32, 0.35];
+const ROAD_COLOR: [number, number, number] = [0.1, 0.1, 0.11];
 
 function lerp(a: number, b: number, t: number): number {
   return a + (b - a) * t;

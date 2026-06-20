@@ -4,12 +4,11 @@ function clamp(value: number, min: number, max: number): number {
 
 // Pointer-lock based mouse steering: tracks a virtual "wheel" offset built
 // from accumulated relative mouse deltas (not absolute cursor position,
-// which would hit the screen edge), self-centering over time like a real
-// steering wheel released by the driver.
+// which would hit the screen edge). The offset only changes in response to
+// mouse movement and holds steady otherwise — it does not self-center.
 export class MouseSteering {
   sensitivity = 0.0022;
   linearity = 1.6;
-  private decayPerSecond = 1.4;
 
   private offset = 0;
   private locked = false;
@@ -27,10 +26,6 @@ export class MouseSteering {
       if (!this.locked) return;
       this.offset = clamp(this.offset + e.movementX * this.sensitivity, -1, 1);
     });
-  }
-
-  update(dt: number): void {
-    this.offset *= Math.exp(-this.decayPerSecond * dt);
   }
 
   isActive(): boolean {
