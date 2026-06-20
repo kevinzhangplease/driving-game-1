@@ -34,9 +34,14 @@ async function main() {
   const chunkManager = new ChunkManager(RAPIER, engine.scene, physics.world, 80, 2);
   chunkManager.update(0, 0);
 
-  // Vehicle
+  // Vehicle: spawn just above the sampled terrain height at the origin.
   const tuning = defaultVehicleTuning;
-  const vehicle = new VehicleController(physics.world, tuning, { x: 0, y: 1.2, z: 0 });
+  const spawnGroundHeight = chunkManager.heightField.sample(0, 0);
+  const vehicle = new VehicleController(physics.world, tuning, {
+    x: 0,
+    y: spawnGroundHeight + 1.2,
+    z: 0,
+  });
   const carVisual = new CarVisual(vehicle, vehicle.chassis, tuning);
   engine.scene.add(carVisual.group);
 

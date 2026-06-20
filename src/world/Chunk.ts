@@ -1,13 +1,13 @@
 import * as THREE from 'three';
 import RAPIER from '@dimforge/rapier3d-compat';
 import type { ChunkCoord } from './ChunkKey';
+import type { HeightField } from './terrain/HeightField';
+import { buildTerrainGrid, buildTerrainMesh } from './terrain/TerrainMesh';
 
 const COLOR_EVEN = 0x4a7c59;
 const COLOR_ODD = 0x457355;
+const TERRAIN_SEGMENTS = 12;
 
-// A single streamed terrain tile. Currently a trivial flat plane + matching
-// fixed collider; Milestone 7 replaces the flat geometry with sampled
-// heightfield terrain while keeping this load/unload lifecycle.
 export class Chunk {
   readonly coord: ChunkCoord;
   private mesh: THREE.Mesh;
@@ -22,6 +22,7 @@ export class Chunk {
     world: RAPIER.World,
     coord: ChunkCoord,
     chunkSize: number,
+    heightField: HeightField,
   ) {
     this.coord = coord;
     this.scene = scene;
@@ -31,19 +32,18 @@ export class Chunk {
     const centerZ = (coord.cz + 0.5) * chunkSize;
     const isEven = (coord.cx + coord.cz) % 2 === 0;
 
-    this.mesh = new THREE.Mesh(
-      new THREE.PlaneGeometry(chunkSize, chunkSize),
-      new THREE.MeshStandardMaterial({ color: isEven ? COLOR_EVEN : COLOR_ODD }),
-    );
-    this.mesh.rotation.x = -Math.PI / 2;
+    const grid = buildTerrainGrid(heightField, centerX, centerZ, chunkSize, TERRAIN_SEGMENTS);
+
+    const material = new THREE.MeshStandardMaterial({ color: isEven ? COLOR_EVEN : COLOR_ODD });
+    this.mesh = buildTerrainMesh(grid, material);
     this.mesh.position.set(centerX, 0, centerZ);
     scene.add(this.mesh);
 
     this.body = world.createRigidBody(
-      RAPIER_NS.RigidBodyDesc.fixed().setTranslation(centerX, -0.1, centerZ),
+      RAPIER_NS.RigidBodyDesc.fixed().setTranslation(centerX, 0, centerZ),
     );
     this.collider = world.createCollider(
-      RAPIER_NS.ColliderDesc.cuboid(chunkSize / 2, 0.1, chunkSize / 2),
+      RAPIER_NS.ColliderDesc.trimesh(grid.positions, grid.indices),
       this.body,
     );
   }

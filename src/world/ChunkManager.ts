@@ -2,12 +2,14 @@ import * as THREE from 'three';
 import RAPIER from '@dimforge/rapier3d-compat';
 import { Chunk } from './Chunk';
 import { chunkKey, worldToChunkCoord, type ChunkCoord } from './ChunkKey';
+import { HeightField, defaultHeightFieldParams } from './terrain/HeightField';
 
 const MAX_CHUNK_CREATIONS_PER_UPDATE = 4;
 
 export class ChunkManager {
   readonly chunkSize: number;
   readonly loadRadius: number;
+  readonly heightField: HeightField;
   private rapier: typeof RAPIER;
   private scene: THREE.Scene;
   private world: RAPIER.World;
@@ -25,6 +27,7 @@ export class ChunkManager {
     this.world = world;
     this.chunkSize = chunkSize;
     this.loadRadius = loadRadius;
+    this.heightField = new HeightField(defaultHeightFieldParams);
   }
 
   update(playerWorldX: number, playerWorldZ: number): void {
@@ -42,7 +45,14 @@ export class ChunkManager {
     for (const key of wanted) {
       if (this.chunks.has(key) || creationsThisUpdate >= MAX_CHUNK_CREATIONS_PER_UPDATE) continue;
       const [cx, cz] = key.split(',').map(Number) as [number, number];
-      const chunk = new Chunk(this.rapier, this.scene, this.world, { cx, cz }, this.chunkSize);
+      const chunk = new Chunk(
+        this.rapier,
+        this.scene,
+        this.world,
+        { cx, cz },
+        this.chunkSize,
+        this.heightField,
+      );
       this.chunks.set(key, chunk);
       creationsThisUpdate++;
     }

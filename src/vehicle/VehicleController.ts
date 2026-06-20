@@ -25,7 +25,11 @@ export class VehicleController {
     const bodyDesc = RAPIER.RigidBodyDesc.dynamic()
       .setTranslation(spawnPosition.x, spawnPosition.y, spawnPosition.z)
       .setLinearDamping(0.1)
-      .setAngularDamping(0.6);
+      .setAngularDamping(0.6)
+      // The vehicle controller drives this body by setting wheel forces
+      // directly rather than through collision impulses, which doesn't wake
+      // a sleeping body — so keep it always simulated.
+      .setCanSleep(false);
     this.chassis = world.createRigidBody(bodyDesc);
 
     const { x: hx, y: hy, z: hz } = tuning.chassisHalfExtents;
