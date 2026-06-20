@@ -9,6 +9,7 @@ import { defaultVehicleTuning } from '@/vehicle/VehicleTuning';
 import { InputManager } from '@/input/InputManager';
 import { KeyBindings } from '@/input/KeyBindings';
 import { RebindMenu } from '@/input/RebindMenu';
+import { MouseSteering } from '@/input/MouseSteering';
 
 async function main() {
   const app = document.querySelector<HTMLDivElement>('#app')!;
@@ -51,6 +52,7 @@ async function main() {
   const input = new InputManager();
   const keyBindings = new KeyBindings();
   const rebindMenu = new RebindMenu(keyBindings, input);
+  const mouseSteering = new MouseSteering(app);
 
   let openSettingsWasHeld = false;
 
@@ -74,9 +76,18 @@ async function main() {
         finalThrottle = -1;
       }
     }
-    const steerLeft = input.isActionHeld(keyBindings, 'steerLeft');
-    const steerRight = input.isActionHeld(keyBindings, 'steerRight');
-    const steer = (steerLeft ? 1 : 0) - (steerRight ? 1 : 0);
+
+    mouseSteering.update(dt);
+    let steer: number;
+    if (mouseSteering.isActive()) {
+      // Mouse offset is positive when the mouse moves right; keyboard's
+      // convention is "steerRight" contributing negatively, so flip sign.
+      steer = -mouseSteering.getSteer();
+    } else {
+      const steerLeft = input.isActionHeld(keyBindings, 'steerLeft');
+      const steerRight = input.isActionHeld(keyBindings, 'steerRight');
+      steer = (steerLeft ? 1 : 0) - (steerRight ? 1 : 0);
+    }
 
     vehicle.update(dt, { throttle: finalThrottle, brake: finalBrake, steer });
     physics.step();
