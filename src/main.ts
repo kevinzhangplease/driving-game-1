@@ -10,6 +10,7 @@ import { InputManager } from '@/input/InputManager';
 import { KeyBindings } from '@/input/KeyBindings';
 import { RebindMenu } from '@/input/RebindMenu';
 import { MouseSteering } from '@/input/MouseSteering';
+import { ChunkManager } from '@/world/ChunkManager';
 
 async function main() {
   const app = document.querySelector<HTMLDivElement>('#app')!;
@@ -28,19 +29,10 @@ async function main() {
   const RAPIER = await initPhysics();
   const physics = new PhysicsWorld();
 
-  // Static flat ground: visual + Rapier collider.
-  const groundMesh = new THREE.Mesh(
-    new THREE.PlaneGeometry(400, 400),
-    new THREE.MeshStandardMaterial({ color: 0x4a7c59 }),
-  );
-  groundMesh.rotation.x = -Math.PI / 2;
-  engine.scene.add(groundMesh);
-
-  const groundBody = physics.world.createRigidBody(RAPIER.RigidBodyDesc.fixed());
-  physics.world.createCollider(
-    RAPIER.ColliderDesc.cuboid(200, 0.1, 200).setTranslation(0, -0.1, 0),
-    groundBody,
-  );
+  // Streamed flat ground chunks around the player; Milestone 7 swaps the flat
+  // tiles for sampled heightfield terrain without changing this lifecycle.
+  const chunkManager = new ChunkManager(RAPIER, engine.scene, physics.world, 80, 2);
+  chunkManager.update(0, 0);
 
   // Vehicle
   const tuning = defaultVehicleTuning;
@@ -91,6 +83,9 @@ async function main() {
 
     vehicle.update(dt, { throttle: finalThrottle, brake: finalBrake, steer });
     physics.step();
+
+    const carPos = vehicle.chassis.translation();
+    chunkManager.update(carPos.x, carPos.z);
   });
 
   engine.onRender((_alpha) => {
