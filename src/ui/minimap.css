@@ -1,0 +1,8 @@
+#minimap {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  border-radius: 50%;
+  z-index: 900;
+  pointer-events: none;
+}

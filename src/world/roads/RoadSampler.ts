@@ -9,6 +9,9 @@ export interface RoadInfluence {
   blend: number;
   closestX: number;
   closestZ: number;
+  // Raw distance in meters to the nearest segment's centerline, usable for
+  // lane-marking stripes independent of the flatten blend.
+  distance: number;
 }
 
 export function closestPointOnSegment(
@@ -42,5 +45,5 @@ export function roadInfluence(
     if (candidate.distance < best.distance) best = candidate;
   }
   const blend = clamp01((best.distance - roadHalfWidth) / flattenMargin);
-  return { blend, closestX: best.x, closestZ: best.z };
+  return { blend, closestX: best.x, closestZ: best.z, distance: best.distance };
 }

@@ -21,6 +21,9 @@ export interface BuildingPlacerParams {
   maxDepth: number;
   minHeight: number;
   maxHeight: number;
+  // Chance any given building is instead a tall skyscraper, several times
+  // the normal max height.
+  skyscraperChance: number;
 }
 
 export const defaultBuildingPlacerParams: BuildingPlacerParams = {
@@ -34,6 +37,7 @@ export const defaultBuildingPlacerParams: BuildingPlacerParams = {
   maxDepth: 16,
   minHeight: 6,
   maxHeight: 28,
+  skyscraperChance: 0,
 };
 
 const ROAD_DIRECTION_SALT = { horizontal: 100, vertical: 200 } as const;
@@ -105,8 +109,11 @@ function placeAlongSegment(
         params.minWidth + hash01(a, b, sideSalt + 2, params.seed) * (params.maxWidth - params.minWidth);
       const depth =
         params.minDepth + hash01(a, b, sideSalt + 3, params.seed) * (params.maxDepth - params.minDepth);
-      const height =
+      let height =
         params.minHeight + hash01(a, b, sideSalt + 4, params.seed) * (params.maxHeight - params.minHeight);
+      if (hash01(a, b, sideSalt + 5, params.seed) < params.skyscraperChance) {
+        height = params.maxHeight * (2 + hash01(a, b, sideSalt + 6, params.seed) * 2.5);
+      }
 
       const onRoadX = seg.ax + dirX * t * length;
       const onRoadZ = seg.az + dirZ * t * length;

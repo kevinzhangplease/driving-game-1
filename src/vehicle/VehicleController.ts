@@ -18,6 +18,7 @@ export class VehicleController {
   readonly chassis: RAPIER.RigidBody;
   private controller: RAPIER.DynamicRayCastVehicleController;
   private tuning: VehicleTuning;
+  private chassisCollider: RAPIER.Collider;
 
   constructor(world: RAPIER.World, tuning: VehicleTuning, spawnPosition: RAPIER.Vector) {
     this.tuning = tuning;
@@ -37,7 +38,7 @@ export class VehicleController {
       .setTranslation(0, tuning.centerOfMassHeight, 0)
       .setMass(tuning.chassisMass)
       .setFriction(0.5);
-    world.createCollider(colliderDesc, this.chassis);
+    this.chassisCollider = world.createCollider(colliderDesc, this.chassis);
 
     this.controller = new RAPIER.DynamicRayCastVehicleController(
       this.chassis,
@@ -123,5 +124,17 @@ export class VehicleController {
 
   currentSpeed(): number {
     return this.controller.currentVehicleSpeed();
+  }
+
+  setSuspensionStiffness(stiffness: number): void {
+    this.tuning.suspensionStiffness = stiffness;
+    for (let i = 0; i < 4; i++) {
+      this.controller.setWheelSuspensionStiffness(i, stiffness);
+    }
+  }
+
+  setChassisMass(mass: number): void {
+    this.tuning.chassisMass = mass;
+    this.chassisCollider.setMass(mass);
   }
 }

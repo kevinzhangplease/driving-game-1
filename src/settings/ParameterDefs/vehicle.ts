@@ -1,4 +1,4 @@
-import { stub, type ParamDef } from '../ParameterRegistry';
+import type { ParamDef } from '../ParameterRegistry';
 
 export const vehicleParams: ParamDef[] = [
   {
@@ -13,8 +13,52 @@ export const vehicleParams: ParamDef[] = [
     tooltip: 'Maximum angle in degrees the front wheels can turn to, in either direction.',
     wired: true,
   },
-  stub('vehicle.maxEngineForce', 'Engine Power', 'vehicle', 3000, 'slider', { min: 1000, max: 8000, step: 100 }),
-  stub('vehicle.maxBrakeForce', 'Brake Force', 'vehicle', 60, 'slider', { min: 10, max: 200, step: 5 }),
-  stub('vehicle.suspensionStiffness', 'Suspension Stiffness', 'vehicle', 28, 'slider', { min: 5, max: 60, step: 1 }),
-  stub('vehicle.chassisMass', 'Chassis Mass (kg)', 'vehicle', 1200, 'slider', { min: 600, max: 2500, step: 50 }),
+  {
+    id: 'vehicle.maxEngineForce',
+    label: 'Engine Power',
+    category: 'vehicle',
+    widget: 'slider',
+    defaultValue: 3000,
+    min: 1000,
+    max: 8000,
+    step: 100,
+    tooltip: 'Maximum forward/reverse force the engine can apply to the rear wheels.',
+    wired: true,
+  },
+  {
+    id: 'vehicle.maxBrakeForce',
+    label: 'Brake Force',
+    category: 'vehicle',
+    widget: 'slider',
+    defaultValue: 60,
+    min: 10,
+    max: 200,
+    step: 5,
+    tooltip: 'Maximum braking force applied to all four wheels.',
+    wired: true,
+  },
+  {
+    id: 'vehicle.suspensionStiffness',
+    label: 'Suspension Stiffness',
+    category: 'vehicle',
+    widget: 'slider',
+    defaultValue: 28,
+    min: 5,
+    max: 60,
+    step: 1,
+    tooltip: 'Spring stiffness of the wheel suspension; higher feels stiffer and less bouncy.',
+    wired: true,
+  },
+  {
+    id: 'vehicle.chassisMass',
+    label: 'Chassis Mass (kg)',
+    category: 'vehicle',
+    widget: 'slider',
+    defaultValue: 1200,
+    min: 600,
+    max: 2500,
+    step: 50,
+    tooltip: 'Mass of the car body; heavier cars accelerate/brake more slowly but feel more stable.',
+    wired: true,
+  },
 ];

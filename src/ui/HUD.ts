@@ -7,11 +7,15 @@ const DIAL_RADIUS = DIAL_SIZE / 2 - 6;
 const DIAL_VISUAL_RANGE_RAD = Math.PI / 2;
 
 // Bottom-center overlay showing live speed and a steering-wheel-angle dial.
+export type SpeedUnits = 'kph' | 'mph';
+
 export class HUD {
   private root: HTMLDivElement;
   private speedValueEl: HTMLDivElement;
+  private speedUnitEl: HTMLDivElement;
   private dialCanvas: HTMLCanvasElement;
   private dialCtx: CanvasRenderingContext2D;
+  private units: SpeedUnits = 'kph';
 
   constructor() {
     this.root = document.createElement('div');
@@ -22,10 +26,10 @@ export class HUD {
     this.speedValueEl = document.createElement('div');
     this.speedValueEl.className = 'hud-speed-value';
     this.speedValueEl.textContent = '0';
-    const speedUnit = document.createElement('div');
-    speedUnit.className = 'hud-speed-unit';
-    speedUnit.textContent = 'km/h';
-    speedEl.append(this.speedValueEl, speedUnit);
+    this.speedUnitEl = document.createElement('div');
+    this.speedUnitEl.className = 'hud-speed-unit';
+    this.speedUnitEl.textContent = 'km/h';
+    speedEl.append(this.speedValueEl, this.speedUnitEl);
 
     this.dialCanvas = document.createElement('canvas');
     this.dialCanvas.width = DIAL_SIZE;
@@ -43,11 +47,20 @@ export class HUD {
   // steering angle in radians. maxSteerRad: the tuning's max angle, used to
   // normalize the needle sweep regardless of the configured max.
   update(speedMps: number, steerRad: number, maxSteerRad: number): void {
-    const kph = Math.abs(speedMps) * 3.6;
-    this.speedValueEl.textContent = String(Math.round(kph));
+    const display = this.units === 'mph' ? Math.abs(speedMps) * 2.237 : Math.abs(speedMps) * 3.6;
+    this.speedValueEl.textContent = String(Math.round(display));
 
     const normalized = maxSteerRad > 0 ? steerRad / maxSteerRad : 0;
     this.drawDial(normalized);
+  }
+
+  setUnits(units: SpeedUnits): void {
+    this.units = units;
+    this.speedUnitEl.textContent = units === 'mph' ? 'mph' : 'km/h';
+  }
+
+  setVisible(visible: boolean): void {
+    this.root.style.display = visible ? '' : 'none';
   }
 
   private drawDial(normalizedAngle: number): void {
@@ -66,14 +79,13 @@ export class HUD {
     ctx.stroke();
 
     ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.lineTo(cx - DIAL_RADIUS * 0.9, cy);
-    ctx.lineTo(cx + DIAL_RADIUS * 0.9, cy);
+    ctx.moveTo(cx, cy - DIAL_RADIUS * 0.9);
+    ctx.lineTo(cx, cy + DIAL_RADIUS * 0.9);
     ctx.strokeStyle = '#333';
     ctx.lineWidth = 1;
     ctx.stroke();
 
-    const angle = -Math.PI / 2 + normalizedAngle * DIAL_VISUAL_RANGE_RAD;
+    const angle = normalizedAngle * DIAL_VISUAL_RANGE_RAD;
     ctx.beginPath();
     ctx.moveTo(cx, cy);
     ctx.lineTo(cx + Math.sin(angle) * DIAL_RADIUS * 0.85, cy - Math.cos(angle) * DIAL_RADIUS * 0.85);

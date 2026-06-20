@@ -4,7 +4,8 @@
   right: 2%;
   width: min(420px, 90vw);
   max-height: 90vh;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
   background: rgba(20, 24, 28, 0.92);
   color: #eee;
   font-family: system-ui, sans-serif;
@@ -28,6 +29,18 @@
 .settings-header h2 {
   margin: 0;
   font-size: 16px;
+}
+
+.settings-header,
+.settings-tabs {
+  flex-shrink: 0;
+}
+
+.settings-list {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  min-height: 0;
+  padding-right: 4px;
 }
 
 .settings-close {

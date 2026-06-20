@@ -16,6 +16,7 @@ import { allParams } from '@/settings/ParameterDefs';
 import { SettingsPanel } from '@/settings/ui/SettingsPanel';
 import { bindWorldSettings } from '@/settings/WorldSettingsBinding';
 import { HUD } from '@/ui/HUD';
+import { Minimap } from '@/ui/Minimap';
 
 async function main() {
   const app = document.querySelector<HTMLDivElement>('#app')!;
@@ -29,7 +30,17 @@ async function main() {
 
   const sun = new THREE.DirectionalLight(0xffffff, 2);
   sun.position.set(20, 30, 10);
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(1024, 1024);
+  sun.shadow.camera.near = 1;
+  sun.shadow.camera.far = 150;
+  sun.shadow.camera.left = -60;
+  sun.shadow.camera.right = 60;
+  sun.shadow.camera.top = 60;
+  sun.shadow.camera.bottom = -60;
+  sun.shadow.bias = -0.002;
   engine.scene.add(sun);
+  engine.scene.add(sun.target);
 
   const RAPIER = await initPhysics();
   const physics = new PhysicsWorld();
@@ -56,6 +67,9 @@ async function main() {
   const rebindMenu = new RebindMenu(keyBindings, input);
   const mouseSteering = new MouseSteering(app);
 
+  const hud = new HUD();
+  const minimap = new Minimap();
+
   const settingsStore = new SettingsStore(allParams);
   const settingsPanel = new SettingsPanel(settingsStore);
   bindWorldSettings(settingsStore, {
@@ -65,9 +79,9 @@ async function main() {
     sun,
     hemiLight,
     vehicleTuning: tuning,
+    vehicle,
+    hud,
   });
-
-  const hud = new HUD();
 
   let openSettingsWasHeld = false;
   let openWorldSettingsWasHeld = false;
@@ -115,12 +129,39 @@ async function main() {
 
     const carPos = vehicle.chassis.translation();
     chunkManager.update(carPos.x, carPos.z);
+
+    if (settingsStore.getBoolean('gameplay.restartOnFlip')) {
+      const r = vehicle.chassis.rotation();
+      const orientation = new THREE.Quaternion(r.x, r.y, r.z, r.w);
+      const up = new THREE.Vector3(0, 1, 0).applyQuaternion(orientation);
+      if (up.y < -0.2) {
+        const groundY = chunkManager.heightField.sample(carPos.x, carPos.z);
+        vehicle.chassis.setTranslation({ x: carPos.x, y: groundY + 2, z: carPos.z }, true);
+        vehicle.chassis.setRotation({ x: 0, y: 0, z: 0, w: 1 }, true);
+        vehicle.chassis.setLinvel({ x: 0, y: 0, z: 0 }, true);
+        vehicle.chassis.setAngvel({ x: 0, y: 0, z: 0 }, true);
+      }
+    }
   });
 
   engine.onRender((_alpha) => {
     carVisual.update();
     chaseCamera.update(carVisual.group, 1 / 60);
     hud.update(vehicle.currentSpeed(), vehicle.getWheelState(0).steering, tuning.maxSteerAngle);
+
+    // The directional light's shadow frustum is small and fixed in size, so
+    // it must be recentered on the car each frame in this infinite world,
+    // rather than staying anchored near the origin.
+    const carPos = vehicle.chassis.translation();
+    const sunDirection = (sun.userData.direction as THREE.Vector3) ?? new THREE.Vector3(0.5, 0.75, 0.25).normalize();
+    sun.position.set(carPos.x, 0, carPos.z).addScaledVector(sunDirection, 40);
+    sun.target.position.set(carPos.x, carPos.y, carPos.z);
+    sun.target.updateMatrixWorld();
+
+    const r = vehicle.chassis.rotation();
+    const forward = new THREE.Vector3(0, 0, 1).applyQuaternion(new THREE.Quaternion(r.x, r.y, r.z, r.w));
+    const headingRad = Math.atan2(forward.x, -forward.z);
+    minimap.update(carPos.x, carPos.z, headingRad, chunkManager.roadGraph);
   });
 
   engine.start();

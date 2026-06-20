@@ -6,6 +6,8 @@ import { HeightField, defaultHeightFieldParams, type HeightFieldParams } from '.
 import { RoadGraph, defaultRoadGraphParams, type RoadGraphParams } from './roads/RoadGraph';
 import { defaultBuildingPlacerParams } from './placement/BuildingPlacer';
 import { defaultTreePlacerParams } from './placement/TreePlacer';
+import { defaultStreetFurnitureParams } from './placement/StreetFurniturePlacer';
+import { defaultRoadStyleParams } from './terrain/TerrainMesh';
 
 const MAX_CHUNK_CREATIONS_PER_UPDATE = 4;
 
@@ -38,6 +40,10 @@ export class ChunkManager {
       building: { ...defaultBuildingPlacerParams },
       tree: { ...defaultTreePlacerParams },
       signsEnabled: true,
+      streetFurniture: { ...defaultStreetFurnitureParams },
+      roadStyle: { ...defaultRoadStyleParams },
+      buildingColorPalette: 'neutral',
+      vegetationSeasonalTint: 'summer',
     };
   }
 

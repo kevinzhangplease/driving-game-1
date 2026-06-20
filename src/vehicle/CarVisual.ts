@@ -26,6 +26,8 @@ export class CarVisual {
     const lowerHeight = hy * 1.3;
     const lowerBody = new THREE.Mesh(new THREE.BoxGeometry(hx * 2, lowerHeight, hz * 2), bodyMaterial);
     lowerBody.position.y = tuning.centerOfMassHeight - hy * 0.35;
+    lowerBody.castShadow = true;
+    lowerBody.receiveShadow = true;
     this.group.add(lowerBody);
 
     // Cabin/greenhouse: narrower and shorter, set back slightly from the
@@ -35,6 +37,7 @@ export class CarVisual {
     const cabinLength = hz * 1.2;
     const cabin = new THREE.Mesh(new THREE.BoxGeometry(cabinWidth, cabinHeight, cabinLength), bodyMaterial);
     cabin.position.set(0, tuning.centerOfMassHeight + lowerHeight / 2 + cabinHeight / 2, -hz * 0.15);
+    cabin.castShadow = true;
     this.group.add(cabin);
 
     for (let i = 0; i < vehicle.numWheels; i++) {
@@ -49,6 +52,7 @@ export class CarVisual {
         new THREE.MeshStandardMaterial({ color: 0x1a1a1a }),
       );
       wheelMesh.rotation.z = Math.PI / 2;
+      wheelMesh.castShadow = true;
       wheelGroup.add(wheelMesh);
       this.group.add(wheelGroup);
       this.wheelMeshes.push(wheelGroup);

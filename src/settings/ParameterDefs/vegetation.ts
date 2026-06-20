@@ -49,6 +49,21 @@ export const vegetationParams: ParamDef[] = [
     tooltip: 'Tallest possible tree height in meters.',
     wired: true,
   },
+  {
+    id: 'vegetation.seasonalTint',
+    label: 'Seasonal Tint',
+    category: 'vegetation',
+    widget: 'select',
+    defaultValue: 'summer',
+    options: [
+      { value: 'spring', label: 'Spring' },
+      { value: 'summer', label: 'Summer' },
+      { value: 'autumn', label: 'Autumn' },
+      { value: 'winter', label: 'Winter' },
+    ],
+    tooltip: 'Tints tree canopy color to match the season.',
+    wired: true,
+  },
   stub('vegetation.biomeType', 'Biome Type', 'vegetation', 'temperate', 'select', {
     options: [
       { value: 'temperate', label: 'Temperate' },
@@ -56,6 +71,7 @@ export const vegetationParams: ParamDef[] = [
       { value: 'tropical', label: 'Tropical' },
       { value: 'alpine', label: 'Alpine' },
     ],
+    tooltip: 'Reserved for biome-specific vegetation meshes; needs new tree/shrub variants.',
   }),
   stub('vegetation.canopyShape', 'Canopy Shape', 'vegetation', 'conical', 'select', {
     options: [
@@ -63,17 +79,30 @@ export const vegetationParams: ParamDef[] = [
       { value: 'round', label: 'Round' },
       { value: 'sparse', label: 'Sparse' },
     ],
+    tooltip: 'Reserved for alternate canopy geometry; needs new tree mesh variants.',
   }),
-  stub('vegetation.grassDensity', 'Grass Density', 'vegetation', 0.5, 'slider', { min: 0, max: 1, step: 0.05 }),
-  stub('vegetation.shrubDensity', 'Shrub Density', 'vegetation', 0.2, 'slider', { min: 0, max: 1, step: 0.05 }),
-  stub('vegetation.flowerChance', 'Flower Chance', 'vegetation', 0.05, 'slider', { min: 0, max: 1, step: 0.05 }),
-  stub('vegetation.seasonalTint', 'Seasonal Tint', 'vegetation', 'summer', 'select', {
-    options: [
-      { value: 'spring', label: 'Spring' },
-      { value: 'summer', label: 'Summer' },
-      { value: 'autumn', label: 'Autumn' },
-      { value: 'winter', label: 'Winter' },
-    ],
+  stub('vegetation.grassDensity', 'Grass Density', 'vegetation', 0.5, 'slider', {
+    min: 0,
+    max: 1,
+    step: 0.05,
+    tooltip: 'Reserved for a ground-cover grass system; needs new placement/rendering.',
   }),
-  stub('vegetation.windSway', 'Wind Sway', 'vegetation', 0.2, 'slider', { min: 0, max: 1, step: 0.05 }),
+  stub('vegetation.shrubDensity', 'Shrub Density', 'vegetation', 0.2, 'slider', {
+    min: 0,
+    max: 1,
+    step: 0.05,
+    tooltip: 'Reserved for a shrub placement system; needs new placement/rendering.',
+  }),
+  stub('vegetation.flowerChance', 'Flower Chance', 'vegetation', 0.05, 'slider', {
+    min: 0,
+    max: 1,
+    step: 0.05,
+    tooltip: 'Reserved for a flower placement system; needs new placement/rendering.',
+  }),
+  stub('vegetation.windSway', 'Wind Sway', 'vegetation', 0.2, 'slider', {
+    min: 0,
+    max: 1,
+    step: 0.05,
+    tooltip: 'Reserved for animated tree sway; needs a per-frame vegetation animation system.',
+  }),
 ];
